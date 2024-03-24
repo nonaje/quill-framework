@@ -1,0 +1,4 @@
+### GET request with a header
+// @no-log
+GET {{host}}/healthcheck
+Accept: application/json
