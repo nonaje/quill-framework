@@ -11,11 +11,11 @@ use Quill\Support\Pattern\Singleton;
 
 
 /**
- * @method Router get(string $uri, Closure|array $target)
- * @method Router post(string $uri, Closure|array $target)
- * @method Router put(string $uri, Closure|array $target)
- * @method Router patch(string $uri, Closure|array $target)
- * @method Router delete(string $uri, Closure|array $target)
+ * @method Route get(string $uri, Closure|array $target)
+ * @method Route post(string $uri, Closure|array $target)
+ * @method Route put(string $uri, Closure|array $target)
+ * @method Route patch(string $uri, Closure|array $target)
+ * @method Route delete(string $uri, Closure|array $target)
  */
 final class Router extends Singleton
 {
@@ -39,24 +39,6 @@ final class Router extends Singleton
         $this->dispatcher->store($this->store)->dispatch();
     }
 
-    public function middleware(Closure|string|array $middleware): self
-    {
-        $route = $this->store->routes()[$this->store->count() - 1];
-
-        $this->store->update(Route::make(
-            uri: $route->uri,
-            method: $route->method,
-            target: $route->target,
-            params: $route->params,
-            middlewares: array_merge(
-                $route->middlewares,
-                is_array($middleware) ? array_values($middleware) : [$middleware]
-            )
-        ));
-
-        return $this;
-    }
-
     public function __call(string $method, array $arguments = [])
     {
         if (!in_array(strtoupper($method), HttpMethod::values())) {
@@ -66,14 +48,12 @@ final class Router extends Singleton
         return $this->addRoute($method, ...$arguments);
     }
 
-    private function addRoute(string $method, string $uri, Closure|array $target): self
+    private function addRoute(string $method, string $uri, Closure|array $target): Route
     {
-        $this->store->add(Route::make(
-            uri: $uri,
+        return $this->store->add(Route::make(
+            uri: trim($uri, '/'),
             method: $method,
             target: $target,
         ));
-
-        return $this;
     }
 }

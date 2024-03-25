@@ -12,7 +12,7 @@ abstract class Singleton
 
     /**
      * is not allowed to call from outside to prevent from creating multiple instances,
-     * to use the singleton, you have to obtain the instance from Singleton::getInstance() instead
+     * to use the singleton, you have to obtain the instance from Singleton::make() instead
      */
     protected function __construct()
     {

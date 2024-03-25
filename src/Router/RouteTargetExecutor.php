@@ -11,7 +11,7 @@ final class RouteTargetExecutor
 {
     public function dispatch(Request $request, Response $response): void
     {
-        $target = $request->route()->target;
+        $target = $request->route()->target();
 
         if (is_callable($target)) {
             $target($request, $response);
@@ -24,6 +24,6 @@ final class RouteTargetExecutor
         (new $controller(
             request: Request::make(),
             response: Response::make()
-        ))->{$method}(...$request->route()->params);
+        ))->{$method}(...$request->route()->params());
     }
 }

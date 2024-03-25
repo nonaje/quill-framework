@@ -8,16 +8,16 @@ use Closure;
 use LogicException;
 use Quill\Enum\HttpMethod;
 
-readonly final class Route
+final class Route
 {
     private MiddlewareValidator $middlewareValidator;
 
     private function __construct(
-        public string               $uri,
-        public string               $method,
-        public Closure|array        $target,
-        public array                $params,
-        public Closure|string|array $middlewares
+        private readonly string        $uri,
+        private readonly HttpMethod    $method,
+        private readonly Closure|array $target,
+        private readonly array         $params,
+        private Closure|string|array   $middlewares
     )
     {
     }
@@ -34,7 +34,7 @@ readonly final class Route
 
         $route = new self(
             uri: $uri,
-            method: HttpMethod::{strtoupper($method)}->value,
+            method: HttpMethod::{strtoupper($method)},
             target: $target,
             params: $params,
             middlewares: $middlewares
@@ -45,17 +45,52 @@ readonly final class Route
         return $route->assert();
     }
 
+    public function middleware(Closure|string|array $middleware): self
+    {
+        $this->middlewares = array_merge(
+            $this->middlewares,
+            is_array($middleware) ? array_values($middleware) : [$middleware]
+        );
+
+        return $this;
+    }
+
+    public function uri(): string
+    {
+        return $this->uri;
+    }
+
+    public function method(): HttpMethod
+    {
+        return $this->method;
+    }
+
+    public function target(): Closure|array
+    {
+        return $this->target;
+    }
+
+    public function params(): array
+    {
+        return $this->params;
+    }
+
+    public function middlewares(): array
+    {
+        return $this->middlewares;
+    }
+
     private function assert(): self
     {
         if (!str_starts_with($this->uri, '/')) {
             throw new LogicException(
-                "URI {$this->uri} must starts with '/'"
+                "URI $this->uri must starts with '/'"
             );
         }
 
-        if (!in_array($this->method, HttpMethod::values())) {
+        if (!$this->method instanceof HttpMethod) {
             throw new LogicException(
-                "Please provide a valid HTTP method for URI {$this->uri}"
+                "Please provide a valid HTTP method for URI $this->uri"
             );
         }
 
@@ -104,4 +139,5 @@ readonly final class Route
 
         return $this;
     }
+
 }

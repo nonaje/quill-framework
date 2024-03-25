@@ -38,18 +38,18 @@ readonly final class RouterDispatcher
     private function matchRequestedUri(): void
     {
         foreach ($this->store->routes() as $route) {
-            if ($route->method !== $this->request->method()) continue;
+            if ($route->method()->value !== $this->request->method()) continue;
 
             [$match, $params] = $this->matchUriPatternAndExtractParameters($route);
 
             if (!$match) continue;
 
             $this->store->update($route = Route::make(
-                uri: $route->uri,
-                method: $route->method,
-                target: $route->target,
+                uri: $route->uri(),
+                method: $route->method()->value,
+                target: $route->target(),
                 params: $params,
-                middlewares: $route->middlewares
+                middlewares: $route->middlewares()
             ));
 
             $this->request->route($route);
@@ -59,7 +59,7 @@ readonly final class RouterDispatcher
 
     private function matchUriPatternAndExtractParameters(Route $route): array
     {
-        $pattern = preg_replace('/\/:([^\/]+)/', '/(?P<$1>[^/]+)', $route->uri);
+        $pattern = preg_replace('/\/:([^\/]+)/', '/(?P<$1>[^/]+)', $route->uri());
 
         if (preg_match("#^$pattern$#", $this->request->uri(), $matches)) {
             $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
@@ -71,7 +71,7 @@ readonly final class RouterDispatcher
 
     private function sendRequestThroughMiddlewares(): void
     {
-        foreach ($this->request->route()->middlewares as $middleware) {
+        foreach ($this->request->route()->middlewares() as $middleware) {
             if (is_callable($middleware)) {
                 $middleware($this->request, $this->response);
                 continue;

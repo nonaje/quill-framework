@@ -11,9 +11,11 @@ class RouteStore extends Singleton
     /** @var Route[] $routes */
     private array $routes = [];
 
-    public function add(Route $route): void
+    public function add(Route $route): Route
     {
         $this->routes[] = $route;
+
+        return $route;
     }
 
     public function remove(Route $route): bool
@@ -30,7 +32,7 @@ class RouteStore extends Singleton
     private function find(Route $searched): null|int
     {
         foreach ($this->routes as $key => $route) {
-            if ($route->method === $searched->method && $route->uri === $searched->uri) {
+            if ($route->method() === $searched->method() && $route->uri() === $searched->uri()) {
                 return $key;
             }
         }
