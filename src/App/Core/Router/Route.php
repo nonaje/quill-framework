@@ -4,46 +4,36 @@ declare(strict_types=1);
 
 namespace App\Core\Router;
 
+use App\Core\Enum\HttpMethod;
 use Closure;
 
-final class Route
+readonly final class Route
 {
-    public readonly string $uri;
+    public string $uri;
 
-    public function __construct(
+    private function __construct(
         string $uri,
-        public readonly string $method,
-        public readonly Closure|array $target,
-        private array $params = [],
-        private array $middlewares = []
+        public string $method,
+        public Closure|array $target,
+        public array $params,
+        public Closure|string|array $middlewares
     ) {
-        $this->uri = $uri === '' ? '/' : $uri;
+        $this->uri = str_starts_with($uri, '/') ? $uri : '/' . $uri;
     }
 
-    public function getMiddlewares(): array
-    {
-        return $this->middlewares;
-    }
-
-    public function getParams(): array
-    {
-        return $this->params;
-    }
-
-    public function middleware(Closure|string|array $middleware): self
-    {
-        $this->middlewares = array_merge(
-            $this->middlewares,
-            is_array($middleware) ? array_values($middleware) : [$middleware]
+    public static function make(
+        string $uri,
+        string $method,
+        Closure|array $target,
+        array $params = [],
+        Closure|string|array $middlewares = []
+    ): self {
+        return new self(
+            uri: $uri,
+            method: HttpMethod::{strtoupper($method)}->value,
+            target: $target,
+            params: $params,
+            middlewares: $middlewares
         );
-
-        return $this;
-    }
-
-    public function params(array $params): self
-    {
-        $this->params = $params;
-
-        return $this;
     }
 }

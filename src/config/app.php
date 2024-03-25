@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middlewares\ExampleMiddleware;
+
 return [
     'name' => env('APP_NAME', 'lightweight_api'),
     'environment' => env('APP_ENVIRONMENT', 'dev'),
@@ -12,7 +14,7 @@ return [
         | Available middlewares: auth
         */
         'middlewares' => [
-            'auth' => \App\Http\Middlewares\Authenticate::class,
+            'example' => ExampleMiddleware::class,
         ],
     ],
 ];

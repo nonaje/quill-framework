@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Config;
 
+use LogicException;
+
 class Parser
 {
     public const string CONFIG_PATH = __DIR__ . '/../../../config';
@@ -21,7 +23,7 @@ class Parser
             if (file_exists($file)) {
                 return require $file;
             } else {
-                throw new \LogicException('Please provide a valid config file.');
+                throw new LogicException('Please provide a valid config file.');
             }
         }
 

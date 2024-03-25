@@ -5,32 +5,29 @@ declare(strict_types=1);
 namespace App\Core\Request;
 
 use App\Core\Patterns\Singleton;
+use App\Core\Router\Route;
 
 class Request extends Singleton
 {
-    private const string GET = 'GET';
-    private const string POST = 'POST';
-    private const string PUT = 'PUT';
-    private const string PATCH = 'PATCH';
-    private const string DELETE = 'DELETE';
-
-    protected function __construct(
-        private array $rawRequest
-    ) {
-    }
+    private null|Route $route = null;
 
     public function body(): array
     {
-        return ['x' => 'x'];
+        return ['foo' => 'bar'];
+    }
+
+    public function route(Route $route = null): null|Route
+    {
+        return $this->route ?: $this->route = $route;
     }
 
     public function method(): string
     {
-        return self::{$this->rawRequest['REQUEST_METHOD']};
+        return $this->route?->method ?? $_SERVER['REQUEST_METHOD'];
     }
 
     public function uri(): string
     {
-        return $this->rawRequest['REQUEST_URI'];
+        return $this->route?->uri ?? $_SERVER['REQUEST_URI'];
     }
 }

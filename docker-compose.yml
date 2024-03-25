@@ -41,10 +41,8 @@ services:
 
 networks:
   app-network:
-    name: src-network
     driver: bridge
 
 volumes:
   pgsql:
-    name: pgsql
     driver: 'local'
