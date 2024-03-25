@@ -1,0 +1,19 @@
+{
+    "name": "elnonito/quill",
+    "description": "A simple framework to make lightweight PHP APIs",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Quill\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Agustin Ferrari"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.6",
+        "symfony/var-dumper": "^7.0"
+    }
+}
