@@ -1,8 +1,0 @@
-// @no-log
-GET {{host}}
-Accept: application/json
-
-### GET request with a header
-// @no-log
-GET {{host}}/api/healthcheck
-Accept: application/json
