@@ -11,12 +11,15 @@ use Quill\Response\Response;
 readonly final class RouterDispatcher
 {
     private RouteStore $store;
+
     public function __construct(
-        private Request $request,
-        private Response $response,
-        private Config $config,
+        private Request             $request,
+        private Response            $response,
+        private Config              $config,
         private RouteTargetExecutor $executor
-    ) { }
+    )
+    {
+    }
 
     public function dispatch(): void
     {
@@ -32,13 +35,6 @@ readonly final class RouterDispatcher
         $this->executor->dispatch($this->request, $this->response);
     }
 
-    public function store(RouteStore $store): self
-    {
-        $this->store = $store;
-
-        return $this;
-    }
-
     private function matchRequestedUri(): void
     {
         foreach ($this->store->routes() as $route) {
@@ -46,7 +42,7 @@ readonly final class RouterDispatcher
 
             [$match, $params] = $this->matchUriPatternAndExtractParameters($route);
 
-            if (! $match) continue;
+            if (!$match) continue;
 
             $this->store->update($route = Route::make(
                 uri: $route->uri,
@@ -59,8 +55,6 @@ readonly final class RouterDispatcher
             $this->request->route($route);
             return;
         }
-
-        $this->response->sendRouteNotFound();
     }
 
     private function matchUriPatternAndExtractParameters(Route $route): array
@@ -72,7 +66,7 @@ readonly final class RouterDispatcher
             return [true, $params];
         }
 
-        return [false , []];
+        return [false, []];
     }
 
     private function sendRequestThroughMiddlewares(): void
@@ -89,5 +83,12 @@ readonly final class RouterDispatcher
 
             (new $instantiable)($this->request, $this->response);
         }
+    }
+
+    public function store(RouteStore $store): self
+    {
+        $this->store = $store;
+
+        return $this;
     }
 }

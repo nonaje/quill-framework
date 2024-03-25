@@ -20,10 +20,10 @@ use Quill\Support\Pattern\Singleton;
 final class Router extends Singleton
 {
     protected function __construct(
-        private readonly RouteStore $store,
+        private readonly RouteStore       $store,
         private readonly RouterDispatcher $dispatcher,
-        private readonly MiddlewareValidator $middleware
-    ) {
+    )
+    {
         parent::__construct();
     }
 
@@ -41,8 +41,6 @@ final class Router extends Singleton
 
     public function middleware(Closure|string|array $middleware): self
     {
-        $middleware = $this->middleware->validate($middleware);
-
         $route = $this->store->routes()[$this->store->count() - 1];
 
         $this->store->update(Route::make(
@@ -59,6 +57,15 @@ final class Router extends Singleton
         return $this;
     }
 
+    public function __call(string $method, array $arguments = [])
+    {
+        if (!in_array(strtoupper($method), HttpMethod::values())) {
+            throw new LogicException("Undefined method " . self::class . "@$method");
+        }
+
+        return $this->addRoute($method, ...$arguments);
+    }
+
     private function addRoute(string $method, string $uri, Closure|array $target): self
     {
         $this->store->add(Route::make(
@@ -68,14 +75,5 @@ final class Router extends Singleton
         ));
 
         return $this;
-    }
-
-    public function __call(string $method, array $arguments = [])
-    {
-        if (! in_array(strtoupper($method), HttpMethod::values())) {
-            throw new LogicException("Undefined method " . self::class . "@$method");
-        }
-
-        return $this->addRoute($method, ...$arguments);
     }
 }

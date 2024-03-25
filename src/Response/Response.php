@@ -8,6 +8,14 @@ use Quill\Support\Pattern\Singleton;
 
 class Response extends Singleton
 {
+    public static function sendRouteNotFound(): never
+    {
+        static::send([
+            'success' => false,
+            'message' => "Route not found",
+        ], 404);
+    }
+
     public static function send(array $payload = [], int $status = 200, array $headers = []): never
     {
         $headers['Content-Type'] ??= 'application/json';
@@ -26,13 +34,5 @@ class Response extends Singleton
 
         echo json_encode($payload);
         die;
-    }
-
-    public static function sendRouteNotFound(): never
-    {
-        static::send([
-            'success' => false,
-            'message' => "Route not found",
-        ], 404);
     }
 }

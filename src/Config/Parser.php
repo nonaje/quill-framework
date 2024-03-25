@@ -13,7 +13,7 @@ class Parser
     {
         $this->key = $key;
 
-        if (! str_contains($key, $separator)) {
+        if (!str_contains($key, $separator)) {
             $this->tree = [$key];
             return $this;
         }

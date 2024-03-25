@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Quill\Router;
 
-use Quill\Config\Config;
 use Closure;
 use LogicException;
+use Quill\Config\Config;
 
 final class MiddlewareValidator
 {
@@ -23,7 +23,7 @@ final class MiddlewareValidator
 
         // If the provided middleware is a string class, we need to validate that the class exists.
         // If the provided middleware is a simple string, it must match the registered middlewares
-        if (! class_exists($middleware) && ! Config::make()->get("app.router.middlewares.$middleware", false)) {
+        if (!class_exists($middleware) && !Config::make()->get("app.router.middlewares.$middleware", false)) {
             throw new LogicException("Please provide a valid middleware, provided middleware: $middleware");
         }
 
