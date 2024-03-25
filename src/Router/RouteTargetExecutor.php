@@ -29,7 +29,7 @@ final class RouteTargetExecutor
 
         if (! method_exists($controller, $method)) {
             throw new LogicException(
-                "Please provide a valid controller method, provided method: $method."
+                "Please provide a valid controller method, provided method: $method"
             );
         }
 

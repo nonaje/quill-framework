@@ -4,30 +4,23 @@ declare(strict_types=1);
 
 namespace Quill\Config;
 
-use LogicException;
-
 class Parser
 {
     private string $key = '';
     private array $tree = [];
 
-    public function parse(string $key, string $separator = '.'): void
+    public function parse(string $key, string $separator = '.'): self
     {
         $this->key = $key;
 
         if (! str_contains($key, $separator)) {
             $this->tree = [$key];
-            return;
+            return $this;
         }
 
         $this->tree = explode($separator, $this->key);
 
-        dd($this->tree);
-//        $file = self::CONFIG_PATH . "/$exploded[0].php";
-
-//        $this->tree = explode('.',  $exploded[1]);
-
-//        return file_exists($file) ? require $file : null;
+        return $this;
     }
 
     public function key(string $key): string
