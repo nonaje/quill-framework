@@ -10,7 +10,7 @@ use LogicException;
 
 final class RouteTargetExecutor
 {
-    public function __invoke(Request $request, Response $response): void
+    public function dispatch(Request $request, Response $response): void
     {
         if (is_callable($request->route()->target)) {
             $target = $request->route()->target;
@@ -36,6 +36,6 @@ final class RouteTargetExecutor
         (new $controller(
             request: Request::make(),
             response: Response::make()
-        ))->{$method}($request->route()->params);
+        ))->{$method}(...$request->route()->params);
     }
 }

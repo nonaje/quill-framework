@@ -14,6 +14,7 @@ use App\Core\Router\Router;
 use App\Core\Router\RouterDispatcher;
 use App\Core\Router\RouteStore;
 use Dotenv\Dotenv;
+use App\Core\Router\RouteTargetExecutor;
 
 try {
     // LOAD ENVIRONMENT VARIABLES VIA .env file
@@ -28,7 +29,8 @@ try {
         dispatcher: new RouterDispatcher(
             request: Request::make(),
             response: Response::make(),
-            config: Config::make()
+            config: Config::make(),
+            executor: new RouteTargetExecutor
         ),
         middleware: new MiddlewareValidator
     )->load(__DIR__ . '/../src/routes/api.php')->dispatch();

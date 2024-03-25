@@ -17,5 +17,5 @@ $router->get('/', function (Request $request, Response $response) {
 });
 
 $router
-    ->get('healthcheck', [HealthcheckController::class])
+    ->get('/healthcheck', [HealthcheckController::class])
     ->middleware(['example']);

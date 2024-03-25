@@ -14,12 +14,13 @@ readonly final class RouterDispatcher
     public function __construct(
         private Request $request,
         private Response $response,
-        private Config $config
+        private Config $config,
+        private RouteTargetExecutor $executor
     ) { }
 
     public function dispatch(): void
     {
-        $this->matchIncomingRequest();
+        $this->matchRequestedUri();
 
         if ($this->request->route() === null) {
             $this->response->sendRouteNotFound();
@@ -27,7 +28,8 @@ readonly final class RouterDispatcher
 
         $this->sendRequestThroughMiddlewares();
 
-        $this->executeRouteTarget();
+        // Call the route target
+        $this->executor->dispatch($this->request, $this->response);
     }
 
     public function store(RouteStore $store): self
@@ -37,32 +39,40 @@ readonly final class RouterDispatcher
         return $this;
     }
 
-    private function matchIncomingRequest(): void
+    private function matchRequestedUri(): void
     {
         foreach ($this->store->routes() as $route) {
-            if ($route->method !== $this->request->method()) {
-                continue;
-            }
+            if ($route->method !== $this->request->method()) continue;
 
-            $pattern = preg_replace('/\/:([^\/]+)/', '/(?P<$1>[^/]+)', $route->uri);
+            [$match, $params] = $this->matchUriPatternAndExtractParameters($route);
 
-            if (preg_match("#^$pattern$#", $this->request->uri(), $matches)) {
-                $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+            if (! $match) continue;
 
-                $this->store->update(Route::make(
-                    uri: $route->uri,
-                    method: $route->method,
-                    target: $route->target,
-                    params: $params,
-                    middlewares: $route->middlewares
-                ));
+            $this->store->update($route = Route::make(
+                uri: $route->uri,
+                method: $route->method,
+                target: $route->target,
+                params: $params,
+                middlewares: $route->middlewares
+            ));
 
-                $this->request->route($route);
-                return;
-            }
+            $this->request->route($route);
+            return;
         }
 
         $this->response->sendRouteNotFound();
+    }
+
+    private function matchUriPatternAndExtractParameters(Route $route): array
+    {
+        $pattern = preg_replace('/\/:([^\/]+)/', '/(?P<$1>[^/]+)', $route->uri);
+
+        if (preg_match("#^$pattern$#", $this->request->uri(), $matches)) {
+            $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+            return [true, $params];
+        }
+
+        return [false , []];
     }
 
     private function sendRequestThroughMiddlewares(): void
@@ -79,11 +89,5 @@ readonly final class RouterDispatcher
 
             (new $instantiable)($this->request, $this->response);
         }
-    }
-
-    private function executeRouteTarget(): void
-    {
-        // TODO: Inversion of control
-        (new RouteTargetExecutor())($this->request, $this->response);
     }
 }

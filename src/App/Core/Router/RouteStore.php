@@ -50,14 +50,12 @@ class RouteStore extends Singleton
 
     private function find(Route $searched): null|int
     {
-        $index = null;
-
         foreach ($this->routes as $key => $route) {
             if ($route->method === $searched->method && $route->uri === $searched->uri) {
-                $index = $key;
+                return $key;
             }
         }
 
-        return $index;
+        return null;
     }
 }
