@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace Quill\Request;
 
 use Quill\Router\Route;
-use Quill\Support\Pattern\Singleton;
 
-class Request extends Singleton
+// TODO: PSR-7 Implementation
+class Request
 {
     private null|Route $route = null;
 
     public function body(): array
     {
-        dd($_SERVER);
         return ['foo' => 'bar'];
     }
 
