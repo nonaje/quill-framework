@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quill\Config;
+namespace Quill\Support\Dot;
 
 class Parser
 {
