@@ -8,7 +8,9 @@ use Quill\Support\Pattern\Singleton;
 
 class RouteStore extends Singleton
 {
-    /** @var Route[] $routes */
+    private null|Route $current = null;
+
+    /** @var array<empty, empty>|Route[] $routes */
     private array $routes = [];
 
     public function add(Route $route): Route
@@ -29,17 +31,6 @@ class RouteStore extends Singleton
         return is_integer($index);
     }
 
-    private function find(Route $searched): null|int
-    {
-        foreach ($this->routes as $key => $route) {
-            if ($route->method() === $searched->method() && $route->uri() === $searched->uri()) {
-                return $key;
-            }
-        }
-
-        return null;
-    }
-
     public function update(Route $route): bool
     {
         $index = $this->find($route);
@@ -51,6 +42,11 @@ class RouteStore extends Singleton
         return is_integer($index);
     }
 
+    public function current(Route $route = null): null|Route
+    {
+        return $route ? $this->current = $route : $this->current;
+    }
+
     public function routes(): array
     {
         return $this->routes;
@@ -59,5 +55,16 @@ class RouteStore extends Singleton
     public function count(): int
     {
         return count($this->routes);
+    }
+
+    private function find(Route $searched): null|int
+    {
+        foreach ($this->routes as $key => $route) {
+            if ($route->method() === $searched->method() && $route->uri() === $searched->uri()) {
+                return $key;
+            }
+        }
+
+        return null;
     }
 }

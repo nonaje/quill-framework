@@ -22,8 +22,8 @@ final class RouteTargetExecutor
         $method = $target[1] ?? '__invoke';
 
         (new $controller(
-            request: Request::make(),
-            response: Response::make()
+            request: $request,
+            response: $response
         ))->{$method}(...$request->route()->params());
     }
 }

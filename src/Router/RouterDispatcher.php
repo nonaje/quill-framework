@@ -23,7 +23,7 @@ readonly final class RouterDispatcher
 
     public function dispatch(): void
     {
-        $this->matchRequestedUri();
+        $this->matchRoute();
 
         if ($this->request->route() === null) {
             $this->response->sendRouteNotFound();
@@ -35,16 +35,18 @@ readonly final class RouterDispatcher
         $this->executor->dispatch($this->request, $this->response);
     }
 
-    private function matchRequestedUri(): void
+    private function matchRoute(): void
     {
         foreach ($this->store->routes() as $route) {
-            if ($route->method()->value !== $this->request->method()) continue;
+            $this->store->current($route);
 
-            [$match, $params] = $this->matchUriPatternAndExtractParameters($route);
+            $match = $this->matchRequestedUri();
 
             if (!$match) continue;
 
-            $this->store->update($route = Route::make(
+            $params = $this->resolveRouteParams();
+
+            $this->store->update($matched = Route::make(
                 uri: $route->uri(),
                 method: $route->method()->value,
                 target: $route->target(),
@@ -52,21 +54,64 @@ readonly final class RouterDispatcher
                 middlewares: $route->middlewares()
             ));
 
-            $this->request->route($route);
+            $this->request->route($matched);
             return;
         }
     }
 
-    private function matchUriPatternAndExtractParameters(Route $route): array
+    private function matchRequestedUri(): bool
     {
-        $pattern = preg_replace('/\/:([^\/]+)/', '/(?P<$1>[^/]+)', $route->uri());
+        $route = $this->store->current();
 
-        if (preg_match("#^$pattern$#", $this->request->uri(), $matches)) {
-            $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
-            return [true, $params];
+        if ($route->method()->value !== $this->request->method()) {
+            return false;
         }
 
-        return [false, []];
+        $routeParts = array_values(array_filter(explode('/', $route->uri())));
+        $searchedRouteParts = array_values(array_filter(explode('/', $this->request->uri())));
+
+        if (count($routeParts) !== count($searchedRouteParts)) {
+            return false;
+        }
+
+        // Check if route is exactly matched
+        if (count(array_diff($routeParts, $searchedRouteParts)) === 0) {
+            return true;
+        }
+
+        $replacedRegisteredUriWithParameters = [];
+        // Check if route can match based on parameters
+        foreach ($routeParts as $key => $part) {
+            $replacedRegisteredUriWithParameters[$key] = $part;
+            if (str_starts_with($part, ':') && isset($searchedRouteParts[$key]) && is_scalar($searchedRouteParts[$key])) {
+                $replacedRegisteredUriWithParameters[$key] = $searchedRouteParts[$key];
+            }
+        }
+
+        if (count(array_diff($searchedRouteParts, $replacedRegisteredUriWithParameters)) === 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function resolveRouteParams(): array
+    {
+        $params = [];
+        $route = $this->store->current();
+
+        $routeParts = array_values(array_filter(explode('/', $route->uri())));
+        $searchedRouteParts = array_values(array_filter(explode('/', $this->request->uri())));
+
+        // Search for every part of the route that starts with ':'
+        // and collects each part of the requested URI at that position
+        foreach ($routeParts as $key => $part) {
+            if (str_starts_with($part, ':') && isset($searchedRouteParts[$key]) && is_scalar($searchedRouteParts[$key])) {
+                $params[$part] = $searchedRouteParts[$key];
+            }
+        }
+
+        return $params;
     }
 
     private function sendRequestThroughMiddlewares(): void
