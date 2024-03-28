@@ -14,7 +14,7 @@ final class RouteTargetExecutor
         $target = $request->route()->target();
 
         if (is_callable($target)) {
-            $target($request, $response);
+            $target($request, $response, ...$request->route()->params());
             return;
         }
 

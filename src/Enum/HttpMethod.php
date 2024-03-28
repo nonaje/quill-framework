@@ -8,6 +8,8 @@ enum HttpMethod: string
 {
     use Steroids;
 
+    case HEAD = 'HEAD';
+
     case GET = 'GET';
 
     case POST = 'POST';

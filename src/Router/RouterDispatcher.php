@@ -107,7 +107,9 @@ readonly final class RouterDispatcher
         // and collects each part of the requested URI at that position
         foreach ($routeParts as $key => $part) {
             if (str_starts_with($part, ':') && isset($searchedRouteParts[$key]) && is_scalar($searchedRouteParts[$key])) {
-                $params[$part] = $searchedRouteParts[$key];
+
+                // Delete the ":" character
+                $params[substr($part, 1)] = $searchedRouteParts[$key];
             }
         }
 
