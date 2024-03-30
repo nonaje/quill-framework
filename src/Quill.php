@@ -35,7 +35,7 @@ final class Quill extends Router
             $files
         );
 
-        $files[] = 'env';
+        array_unshift($files, 'env');
 
         config()->load(array_values($files));
     }

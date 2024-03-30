@@ -54,13 +54,8 @@ class Config extends Singleton
 
     public function load(array $files): void
     {
-        foreach ($files as $file) {
-            if ($file === 'env') {
-                $this->items[$file] = parse_ini_file(Path::applicationFile('.env'));
-                continue;
-            }
-
-            $this->items[$file] = require_once Path::configFile($file . '.php');
+        foreach ($files as $filename) {
+            $this->firstLoad($filename);
         }
     }
 
@@ -77,5 +72,27 @@ class Config extends Singleton
         }
 
         return $value;
+    }
+
+    private function firstLoad(string $filename): void
+    {
+        if ($filename === 'env') {
+            $this->loadDotEnv();
+            return;
+        }
+
+        $this->items[$filename] = require_once Path::configFile($filename . '.php');
+    }
+
+    private function loadDotEnv(): void
+    {
+        $env = [];
+
+        foreach (parse_ini_file(Path::applicationFile('.env')) as $key => $value) {
+            $env[strtolower($key)] = $value;
+        }
+
+        $this->items['env'] = $env;
+        unset($env);
     }
 }
