@@ -7,18 +7,18 @@ namespace Quill\Support\Dot;
 class Parser
 {
     private string $key = '';
-    private array $tree = [];
+    private array $list = [];
 
     public function parse(string $key, string $separator = '.'): self
     {
         $this->key = $key;
 
         if (!str_contains($key, $separator)) {
-            $this->tree = [$key];
+            $this->list = [$key];
             return $this;
         }
 
-        $this->tree = explode($separator, $this->key);
+        $this->list = explode($separator, $this->key);
 
         return $this;
     }
@@ -28,18 +28,18 @@ class Parser
         return $this->key;
     }
 
-    public function tree(): array
+    public function list(): array
     {
-        return $this->tree;
+        return $this->list;
     }
 
     public function first(): string
     {
-        return $this->tree[0];
+        return $this->list[0];
     }
 
     public function count(): int
     {
-        return count($this->tree);
+        return count($this->list);
     }
 }

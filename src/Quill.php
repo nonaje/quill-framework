@@ -13,8 +13,8 @@ final class Quill extends Router
     public function init(): void
     {
         $this->loadRoutes();
-        $this->loadDotEnv();
         $this->loadGlobalFunctions();
+        $this->loadConfig();
         $this->dispatch();
     }
 
@@ -23,9 +23,21 @@ final class Quill extends Router
         $this->load(Path::routeFile('api.php'));
     }
 
-    private function loadDotEnv(): void
+    private function loadConfig(): void
     {
-        Dotenv::createImmutable(Path::applicationPath())->load();
+        $files = array_filter(
+            scandir(Path::applicationFile('config')),
+            fn (string $filename) => str_ends_with($filename, '.php') && Path::configFile($filename)
+        );
+
+        $files = array_map(
+            fn (string $filename) => substr($filename, 0, -4),
+            $files
+        );
+
+        $files[] = 'env';
+
+        config()->load(array_values($files));
     }
 
     private function loadGlobalFunctions(): void
