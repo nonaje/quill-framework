@@ -6,21 +6,30 @@ namespace Quill;
 
 use Dotenv\Dotenv;
 use Quill\Router\Router;
+use Quill\Support\Helpers\Path;
 
 final class Quill extends Router
 {
-    public const string QUILL_BASE_PATH = __DIR__;
-
-    public function loadRoutes(): self
+    public function init(): void
     {
-        $this->load(self::QUILL_BASE_PATH . '/../../../../routes/api.php');
-        return $this;
+        $this->loadRoutes();
+        $this->loadDotEnv();
+        $this->loadGlobalFunctions();
+        $this->dispatch();
     }
 
-    public function loadDotEnv(): self
+    private function loadRoutes(): void
     {
-        Dotenv::createImmutable(__DIR__ . '/../')->load();
+        $this->load(Path::routeFile('api.php'));
+    }
 
-        return $this;
+    private function loadDotEnv(): void
+    {
+        Dotenv::createImmutable(Path::applicationPath())->load();
+    }
+
+    private function loadGlobalFunctions(): void
+    {
+        require_once Path::quillFile('Support/Helpers/GlobalFunctions.php');
     }
 }

@@ -6,6 +6,7 @@ namespace Quill\Config;
 
 use LogicException;
 use Quill\Support\Helpers\Helpers;
+use Quill\Support\Helpers\Path;
 use Quill\Support\Pattern\Singleton;
 use Quill\Support\Dot\Parser;
 
@@ -20,15 +21,13 @@ class Config extends Singleton
     )
     {
         parent::__construct();
-
-        $this->file('config');
     }
 
     public function get(string $key, mixed $default = null): mixed
     {
         $this->parser->parse($key);
 
-        $this->file('config/' . $this->parser->first() . '.php');
+        $this->file($this->parser->first() . '.php');
 
         $this->items = require $this->file;
 
@@ -52,11 +51,7 @@ class Config extends Singleton
 
     private function file(string $filename): self
     {
-        if (!str_starts_with($filename, '/')) {
-            $filename = '/' . $filename;
-        }
-
-        $filename = Helpers::projectPath() . "$filename";
+        $filename = Path::configFile($filename);
 
         if (!file_exists($filename)) {
             throw new LogicException('Please provide a valid config file');
