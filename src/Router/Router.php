@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Quill\Router;
 
 use Closure;
+use InvalidArgumentException;
 use LogicException;
 use Quill\Contracts\RouterInterface;
 use Quill\Enum\HttpMethod;
@@ -18,7 +19,7 @@ use Quill\Support\Pattern\Singleton;
  * @method Route patch(string $uri, Closure|array $target)
  * @method Route delete(string $uri, Closure|array $target)
  */
-final class Router extends Singleton implements RouterInterface
+class Router extends Singleton implements RouterInterface
 {
     protected function __construct(
         private readonly RouteStore       $store,
@@ -30,6 +31,10 @@ final class Router extends Singleton implements RouterInterface
 
     public function load(string $routePath): self
     {
+        if (! file_exists($routePath)) {
+            throw new InvalidArgumentException('Please provide a valid route file');
+        }
+
         require_once $routePath;
 
         return $this;

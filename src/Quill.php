@@ -4,43 +4,23 @@ declare(strict_types=1);
 
 namespace Quill;
 
-use InvalidArgumentException;
-use Quill\Contracts\RouterInterface;
-use Quill\Support\Pattern\Singleton;
+use Dotenv\Dotenv;
+use Quill\Router\Router;
 
-final class Quill extends Singleton
+final class Quill extends Router
 {
-    public const QUILL_BASE_PATH = __DIR__;
-
-    private string $routesPath;
-
-    public function __construct(
-        private readonly RouterInterface $router
-    )
-    {
-
-    }
-
-    public function routes(string $path): self
-    {
-        if (! file_exists($path)) {
-            throw new InvalidArgumentException('Please provide a valid route file');
-        }
-
-        $this->routesPath = $path;
-
-        return $this;
-    }
+    public const string QUILL_BASE_PATH = __DIR__;
 
     public function loadRoutes(): self
     {
-        $this->routes(__DIR__ . '/../../../../routes/api.php');
-        $this->router->load($this->routesPath);
+        $this->load(self::QUILL_BASE_PATH . '/../../../../routes/api.php');
         return $this;
     }
 
-    public function dispatch(): void
+    public function loadDotEnv(): self
     {
-        $this->router->dispatch();
+        Dotenv::createImmutable(__DIR__ . '/../')->load();
+
+        return $this;
     }
 }
