@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Quill\Request;
 
 use Quill\Router\Route;
+use Quill\Support\Pattern\Singleton;
 
 // TODO: PSR-7 Implementation
-class Request
+class Request extends Singleton
 {
     private null|Route $route = null;
 

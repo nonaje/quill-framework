@@ -6,9 +6,10 @@ namespace Quill\Router;
 
 use Closure;
 use LogicException;
+use Quill\Contracts\RouteInterface;
 use Quill\Enum\HttpMethod;
 
-final class Route
+final class Route implements RouteInterface
 {
     private MiddlewareValidator $middlewareValidator;
 

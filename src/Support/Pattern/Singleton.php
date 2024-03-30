@@ -8,7 +8,7 @@ use Exception;
 
 abstract class Singleton
 {
-    private static array $instance = [];
+    private static array $instances = [];
 
     /**
      * is not allowed to call from outside to prevent from creating multiple instances,
@@ -25,11 +25,11 @@ abstract class Singleton
     {
         $class = get_called_class();
 
-        if (!isset(self::$instance[$class])) {
-            self::$instance[$class] = new $class(...$params);
+        if (!isset(self::$instances[$class])) {
+            self::$instances[$class] = new $class(...$params);
         }
 
-        return self::$instance[$class];
+        return self::$instances[$class];
     }
 
     /**

@@ -6,6 +6,7 @@ namespace Quill\Router;
 
 use Closure;
 use LogicException;
+use Quill\Contracts\RouterInterface;
 use Quill\Enum\HttpMethod;
 use Quill\Support\Pattern\Singleton;
 
@@ -17,7 +18,7 @@ use Quill\Support\Pattern\Singleton;
  * @method Route patch(string $uri, Closure|array $target)
  * @method Route delete(string $uri, Closure|array $target)
  */
-final class Router extends Singleton
+final class Router extends Singleton implements RouterInterface
 {
     protected function __construct(
         private readonly RouteStore       $store,
@@ -48,7 +49,7 @@ final class Router extends Singleton
         return $this->addRoute($method, ...$arguments);
     }
 
-    private function addRoute(string $method, string $uri, Closure|array $target): Route
+    public function addRoute(string $method, string $uri, Closure|array $target): Route
     {
         return $this->store->add(Route::make(
             uri: trim($uri, '/'),
