@@ -29,13 +29,9 @@ class Router extends Singleton implements RouterInterface
         parent::__construct();
     }
 
-    public function load(string $routePath): self
+    public function loadRoutes(Closure $toLoad): self
     {
-        if (! file_exists($routePath)) {
-            throw new InvalidArgumentException('Please provide a valid route file');
-        }
-
-        require_once $routePath;
+        $toLoad($this);
 
         return $this;
     }

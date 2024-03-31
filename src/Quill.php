@@ -10,13 +10,16 @@ use Quill\Support\Helpers\Path;
 
 final class Quill extends Router
 {
-    public function init(): void
+    public function init(): self
     {
-        $this->loadGlobalFunctions();
-        loadApplicationConfiguration;
+        require_once Path::quillFile('Support/Helpers/GlobalFunctions.php');
+
+        $this->loadDotEnv();
+
+        return $this;
     }
 
-    public function loadApplicationRoutes(): void
+    public function loadApplicationRoutes(): self
     {
         $routesPath = Path::applicationFile('routes');
 
@@ -28,29 +31,16 @@ final class Quill extends Router
                 }
             }
         }
+
+        return $this;
     }
 
-    private function loadGlobalFunctions(): void
-    {
-        require_once Path::quillFile('Support/Helpers/GlobalFunctions.php');
-    }
-
-    private function loadApplicationConfiguration(): void
+    public function loadDotEnv(): self
     {
         // Load .env into configuration items
         $env = parse_ini_file(Path::applicationFile('.env'));
         config()->put('env', array_combine(array_map('strtolower', array_keys($env)), array_values($env)));
 
-        $files = array_filter(
-            scandir(Path::applicationFile('config')),
-            fn (string $filename) => str_ends_with($filename, '.php') && Path::configFile($filename)
-        );
-
-        foreach ($files as $filename) {
-            config()->put(
-                key: substr($filename, 0, -4),
-                value: require_once Path::configFile($filename)
-            );
-        }
+        return $this;
     }
 }
