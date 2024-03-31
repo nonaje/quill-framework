@@ -6,19 +6,18 @@ namespace Quill\Router;
 
 use Closure;
 use LogicException;
+use Quill\Contracts\MiddlewareInterface;
 use Quill\Contracts\RouteInterface;
 use Quill\Enum\HttpMethod;
 
 final class Route implements RouteInterface
 {
-    private MiddlewareValidator $middlewareValidator;
-
     private function __construct(
         private readonly string        $uri,
         private readonly HttpMethod    $method,
         private readonly Closure|array $target,
         private readonly array         $params,
-        private Closure|string|array   $middlewares
+        private RouteMiddlewareStore   $middlewares
     )
     {
     }
@@ -26,9 +25,9 @@ final class Route implements RouteInterface
     public static function make(
         string               $uri,
         string               $method,
-        Closure|array        $target,
+        array|Closure        $target,
         array                $params = [],
-        Closure|string|array $middlewares = []
+        RouteMiddlewareStore $middlewares = null
     ): self
     {
         $uri = str_starts_with($uri, '/') ? $uri : '/' . $uri;
@@ -38,20 +37,15 @@ final class Route implements RouteInterface
             method: HttpMethod::{strtoupper($method)},
             target: $target,
             params: $params,
-            middlewares: $middlewares
+            middlewares: $middlewares ?? new RouteMiddlewareStore()
         );
-
-        $route->middlewareValidator = new MiddlewareValidator();
 
         return $route->assert();
     }
 
-    public function middleware(Closure|string|array $middleware): self
+    public function middleware(string|array|Closure|MiddlewareInterface $middleware): self
     {
-        $this->middlewares = array_merge(
-            $this->middlewares,
-            is_array($middleware) ? array_values($middleware) : [$middleware]
-        );
+        $this->middlewares->add($middleware);
 
         return $this;
     }
@@ -76,7 +70,7 @@ final class Route implements RouteInterface
         return $this->params;
     }
 
-    public function middlewares(): array
+    public function middlewares(): RouteMiddlewareStore
     {
         return $this->middlewares;
     }
@@ -130,15 +124,6 @@ final class Route implements RouteInterface
             );
         }
 
-        if (!is_array($this->middlewares)) {
-            throw new LogicException(
-                "Please provide a valid middleware"
-            );
-        }
-
-        $this->middlewareValidator->validate($this->middlewares);
-
         return $this;
     }
-
 }

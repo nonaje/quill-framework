@@ -4,10 +4,11 @@ namespace Quill\Contracts;
 
 use Closure;
 use Quill\Enum\HttpMethod;
+use Quill\Router\RouteMiddlewareStore;
 
 interface RouteInterface
 {
-    public function middleware(Closure|string|array $middleware): self;
+    public function middleware(string|array|Closure|MiddlewareInterface $middleware): self;
 
     public function uri(): string;
 
@@ -17,6 +18,5 @@ interface RouteInterface
 
     public function params(): array;
 
-    public function middlewares(): array;
-
+    public function middlewares(): RouteMiddlewareStore;
 }

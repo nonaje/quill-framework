@@ -73,26 +73,4 @@ class Config extends Singleton
 
         return $value;
     }
-
-    private function firstLoad(string $filename): void
-    {
-        if ($filename === 'env') {
-            $this->loadDotEnv();
-            return;
-        }
-
-        $this->items[$filename] = require_once Path::configFile($filename . '.php');
-    }
-
-    private function loadDotEnv(): void
-    {
-        $env = [];
-
-        foreach (parse_ini_file(Path::applicationFile('.env')) as $key => $value) {
-            $env[strtolower($key)] = $value;
-        }
-
-        $this->items['env'] = $env;
-        unset($env);
-    }
 }

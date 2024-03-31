@@ -12,36 +12,45 @@ final class Quill extends Router
 {
     public function init(): void
     {
-        $this->loadRoutes();
         $this->loadGlobalFunctions();
-        $this->loadConfig();
-        $this->dispatch();
+        loadApplicationConfiguration;
     }
 
-    private function loadRoutes(): void
+    public function loadApplicationRoutes(): void
     {
-        $this->load(Path::routeFile('api.php'));
-    }
+        $routesPath = Path::applicationFile('routes');
 
-    private function loadConfig(): void
-    {
-        $files = array_filter(
-            scandir(Path::applicationFile('config')),
-            fn (string $filename) => str_ends_with($filename, '.php') && Path::configFile($filename)
-        );
-
-        $files = array_map(
-            fn (string $filename) => substr($filename, 0, -4),
-            $files
-        );
-
-        array_unshift($files, 'env');
-
-        config()->load(array_values($files));
+        if (file_exists($routesPath)) {
+            foreach (scandir($routesPath) as $filename) {
+                if (str_ends_with($filename, '.php')) {
+                    $routes = Path::applicationFile("routes/$filename");
+                    $this->load($routes);
+                }
+            }
+        }
     }
 
     private function loadGlobalFunctions(): void
     {
         require_once Path::quillFile('Support/Helpers/GlobalFunctions.php');
+    }
+
+    private function loadApplicationConfiguration(): void
+    {
+        // Load .env into configuration items
+        $env = parse_ini_file(Path::applicationFile('.env'));
+        config()->put('env', array_combine(array_map('strtolower', array_keys($env)), array_values($env)));
+
+        $files = array_filter(
+            scandir(Path::applicationFile('config')),
+            fn (string $filename) => str_ends_with($filename, '.php') && Path::configFile($filename)
+        );
+
+        foreach ($files as $filename) {
+            config()->put(
+                key: substr($filename, 0, -4),
+                value: require_once Path::configFile($filename)
+            );
+        }
     }
 }

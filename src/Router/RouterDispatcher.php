@@ -118,17 +118,8 @@ readonly final class RouterDispatcher
 
     private function sendRequestThroughMiddlewares(): void
     {
-        foreach ($this->request->route()->middlewares() as $middleware) {
-            if (is_callable($middleware)) {
-                $middleware($this->request, $this->response);
-                continue;
-            }
-
-            $instantiable = class_exists($middleware)
-                ? $middleware
-                : $this->config->get("app.router.middlewares.$middleware");
-
-            (new $instantiable)($this->request, $this->response);
+        foreach ($this->request->route()->middlewares()->all() as $middleware) {
+            $middleware->handle($this->request, $this->response);
         }
     }
 
