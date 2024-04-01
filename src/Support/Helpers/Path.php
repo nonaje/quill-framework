@@ -6,45 +6,16 @@ namespace Quill\Support\Helpers;
 
 final class Path
 {
-    /*
-    |--------------------------------------------------------------------------
-    | QUILL
-    |--------------------------------------------------------------------------
-    */
-    public static function quillPath(): string
-    {
-        return __DIR__ . '/../..';
-    }
-
     public static function quillFile(string $filename): string
     {
         return self::quillPath() . self::normalizeFilename($filename);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | APPLICATION
-    |--------------------------------------------------------------------------
-    */
-    public static function applicationPath(): string
+    public static function quillPath(): string
     {
-        return __DIR__ . '/../../../../../..';
+        return __DIR__ . '/../..';
     }
 
-    public static function applicationFile(string $filename): string
-    {
-        return self::applicationPath() . self::normalizeFilename($filename);
-    }
-
-    public static function configFile(string $filename): string
-    {
-        return self::applicationFile('config/') . self::normalizeFilename($filename);
-    }
-
-    public static function routeFile(string $filename): string
-    {
-        return self::applicationFile('routes/') . self::normalizeFilename($filename);
-    }
 
     private static function normalizeFilename(string $filename): string
     {
@@ -57,5 +28,25 @@ final class Path
         }
 
         return $filename;
+    }
+
+    public static function configFile(string $filename): string
+    {
+        return self::applicationFile('config/') . self::normalizeFilename($filename);
+    }
+
+    public static function applicationFile(string $filename): string
+    {
+        return self::applicationPath() . self::normalizeFilename($filename);
+    }
+
+    public static function applicationPath(): string
+    {
+        return __DIR__ . '/../../../../../..';
+    }
+
+    public static function routeFile(string $filename): string
+    {
+        return self::applicationFile('routes/') . self::normalizeFilename($filename);
     }
 }

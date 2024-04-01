@@ -4,42 +4,58 @@ declare(strict_types=1);
 
 namespace Quill;
 
-use Dotenv\Dotenv;
+use Quill\Config\Config;
 use Quill\Router\Router;
+use Quill\Router\RouterDispatcher;
+use Quill\Router\RouteStore;
 use Quill\Support\Helpers\Path;
 
 final class Quill extends Router
 {
-    public function init(): self
+    protected function __construct(
+        public readonly Config $config,
+        RouteStore             $store,
+        RouterDispatcher       $dispatcher
+    )
     {
-        require_once Path::quillFile('Support/Helpers/GlobalFunctions.php');
+        parent::__construct($store, $dispatcher);
 
-        $this->loadDotEnv();
-
-        return $this;
     }
 
-    public function loadApplicationRoutes(): self
+    public function loadDotEnv(string $filename = null): self
     {
-        $routesPath = Path::applicationFile('routes');
+        $filename ??= Path::applicationFile('.env');
 
-        if (file_exists($routesPath)) {
-            foreach (scandir($routesPath) as $filename) {
-                if (str_ends_with($filename, '.php')) {
-                    $routes = Path::applicationFile("routes/$filename");
-                    $this->load($routes);
-                }
-            }
+        if (file_exists($filename)) {
+            // Load .env into configuration items
+            $env = parse_ini_file($filename);
+            config()->put('env', array_combine(array_map('strtolower', array_keys($env)), array_values($env)));
         }
 
         return $this;
     }
 
-    public function loadDotEnv(): self
+    public function loadConfig(string $filename = null): self
     {
-        // Load .env into configuration items
-        $env = parse_ini_file(Path::applicationFile('.env'));
-        config()->put('env', array_combine(array_map('strtolower', array_keys($env)), array_values($env)));
+        $filename ??= Path::applicationFile('config');
+
+        if (!file_exists($filename)) {
+            return $this;
+        }
+
+        if (is_file($filename)) {
+            $key = substr(basename($filename), 0, -4);
+            $this->config->put($key, require_once $filename);
+            return $this;
+        }
+
+        if (is_dir($filename)) {
+            foreach (scandir($filename) as $filename) {
+                $key = substr(basename($filename), 0, -4);
+                $this->config->put($key, require_once $filename);
+                return $this;
+            }
+        }
 
         return $this;
     }

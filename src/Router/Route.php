@@ -43,38 +43,6 @@ final class Route implements RouteInterface
         return $route->assert();
     }
 
-    public function middleware(string|array|Closure|MiddlewareInterface $middleware): self
-    {
-        $this->middlewares->add($middleware);
-
-        return $this;
-    }
-
-    public function uri(): string
-    {
-        return $this->uri;
-    }
-
-    public function method(): HttpMethod
-    {
-        return $this->method;
-    }
-
-    public function target(): Closure|array
-    {
-        return $this->target;
-    }
-
-    public function params(): array
-    {
-        return $this->params;
-    }
-
-    public function middlewares(): RouteMiddlewareStore
-    {
-        return $this->middlewares;
-    }
-
     private function assert(): self
     {
         if (!str_starts_with($this->uri, '/')) {
@@ -125,5 +93,37 @@ final class Route implements RouteInterface
         }
 
         return $this;
+    }
+
+    public function middleware(string|array|Closure|MiddlewareInterface $middleware): self
+    {
+        $this->middlewares->add($middleware);
+
+        return $this;
+    }
+
+    public function uri(): string
+    {
+        return $this->uri;
+    }
+
+    public function method(): HttpMethod
+    {
+        return $this->method;
+    }
+
+    public function target(): Closure|array
+    {
+        return $this->target;
+    }
+
+    public function params(): array
+    {
+        return $this->params;
+    }
+
+    public function middlewares(): RouteMiddlewareStore
+    {
+        return $this->middlewares;
     }
 }

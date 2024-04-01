@@ -3,9 +3,9 @@
 namespace Quill\Router\Middleware;
 
 use Closure;
+use Quill\Contracts\MiddlewareInterface;
 use Quill\Request\Request;
 use Quill\Response\Response;
-use Quill\Contracts\MiddlewareInterface;
 
 final class ClosureMiddleware implements MiddlewareInterface
 {

@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use Quill\Config\Config;
+use Quill\Support\Dot\Parser;
+
 if (!function_exists('env')) {
     function env(string $key, mixed $default = null): mixed
     {
@@ -10,11 +13,11 @@ if (!function_exists('env')) {
 }
 
 if (!function_exists('config')) {
-    /** @return \Quill\Config\Config|mixed */
+    /** @return Config|mixed */
     function config(string $key = null, mixed $default = null)
     {
-        $config = \Quill\Config\Config::make(
-            new \Quill\Support\Dot\Parser()
+        $config = Config::make(
+            new Parser()
         );
 
         if ($key === null) {

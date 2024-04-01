@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Quill\Router;
 
+use Closure;
 use Quill\Contracts\MiddlewareInterface;
-use \Closure;
-use \LogicException;
 use Quill\Factory\MiddlewareFactory;
 
 final class RouteMiddlewareStore
 {
-    /** @var MiddlewareInterface[] $stack  */
+    /** @var MiddlewareInterface[] $stack */
     private array $stack = [];
 
     public function add(string|array|Closure|MiddlewareInterface $middleware): void

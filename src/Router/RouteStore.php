@@ -31,6 +31,17 @@ class RouteStore extends Singleton
         return is_integer($index);
     }
 
+    private function find(Route $searched): null|int
+    {
+        foreach ($this->routes as $key => $route) {
+            if ($route->method() === $searched->method() && $route->uri() === $searched->uri()) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+
     public function update(Route $route): bool
     {
         $index = $this->find($route);
@@ -55,16 +66,5 @@ class RouteStore extends Singleton
     public function count(): int
     {
         return count($this->routes);
-    }
-
-    private function find(Route $searched): null|int
-    {
-        foreach ($this->routes as $key => $route) {
-            if ($route->method() === $searched->method() && $route->uri() === $searched->uri()) {
-                return $key;
-            }
-        }
-
-        return null;
     }
 }

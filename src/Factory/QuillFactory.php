@@ -16,6 +16,9 @@ final class QuillFactory
     public static function make(): Quill
     {
         return Quill::make(
+            config: Config::make(
+                new Parser()
+            ),
             store: RouteStore::make(),
             dispatcher: new RouterDispatcher(
                 request: Request::make(),

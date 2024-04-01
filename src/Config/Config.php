@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Quill\Config;
 
-use LogicException;
-use Quill\Support\Helpers\Helpers;
-use Quill\Support\Helpers\Path;
-use Quill\Support\Pattern\Singleton;
 use Quill\Support\Dot\Parser;
+use Quill\Support\Pattern\Singleton;
 
 class Config extends Singleton
 {
@@ -52,19 +49,12 @@ class Config extends Singleton
         $this->items = array_merge_recursive($result, $this->items);
     }
 
-    public function load(array $files): void
-    {
-        foreach ($files as $filename) {
-            $this->firstLoad($filename);
-        }
-    }
-
     private function searchInItems(): mixed
     {
         $value = null;
 
         if ($this->parser->count() === 1) {
-            return $this->items[$this->parser->first()];
+            return $this->items[$this->parser->first()] ?? null;
         }
 
         foreach (array_slice($this->parser->list(), 1) as $pointer) {
