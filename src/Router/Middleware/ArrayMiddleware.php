@@ -2,12 +2,12 @@
 
 namespace Quill\Router\Middleware;
 
-use Quill\Contracts\MiddlewareInterface;
+use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Factory\MiddlewareFactory;
 use Quill\Request\Request;
 use Quill\Response\Response;
 
-class ArrayMiddleware implements MiddlewareInterface
+final class ArrayMiddleware implements MiddlewareInterface
 {
     /** @var MiddlewareInterface[] */
     private array $middlewares;

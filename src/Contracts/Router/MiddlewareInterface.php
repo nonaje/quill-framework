@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quill\Contracts;
+namespace Quill\Contracts\Router;
 
 use Quill\Request\Request;
 use Quill\Response\Response;

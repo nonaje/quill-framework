@@ -1,6 +1,6 @@
 <?php
 
-namespace Quill\Contracts;
+namespace Quill\Contracts\Router;
 
 use Closure;
 use Quill\Enum\HttpMethod;

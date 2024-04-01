@@ -3,11 +3,11 @@
 namespace Quill\Router\Middleware;
 
 use LogicException;
-use Quill\Contracts\MiddlewareInterface;
+use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Request\Request;
 use Quill\Response\Response;
 
-readonly class StringClassMiddleware implements MiddlewareInterface
+final class StringClassMiddleware implements MiddlewareInterface
 {
     public function __construct(private readonly string $middleware)
     {

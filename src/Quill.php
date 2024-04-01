@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Quill;
 
-use Quill\Config\Config;
+use Quill\Contracts\ConfigurationInterface;
+use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Router\Router;
 use Quill\Router\RouterDispatcher;
-use Quill\Router\RouteStore;
 use Quill\Support\Helpers\Path;
 
 final class Quill extends Router
 {
     protected function __construct(
-        public readonly Config $config,
-        RouteStore             $store,
-        RouterDispatcher       $dispatcher
+        public readonly ConfigurationInterface $config,
+        RouteStoreInterface                    $store,
+        RouterDispatcher                       $dispatcher
     )
     {
         parent::__construct($store, $dispatcher);

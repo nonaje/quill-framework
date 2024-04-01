@@ -6,7 +6,8 @@ namespace Quill\Router;
 
 use Closure;
 use LogicException;
-use Quill\Contracts\RouterInterface;
+use Quill\Contracts\Router\RouteInterface;
+use Quill\Contracts\Router\RouterInterface;
 use Quill\Enum\HttpMethod;
 use Quill\Support\Pattern\Singleton;
 
@@ -41,7 +42,7 @@ class Router extends Singleton implements RouterInterface
         throw new LogicException("Undefined method " . self::class . "@$method");
     }
 
-    public function map(string $method, string $uri, Closure|array $target): Route
+    public function map(string $method, string $uri, Closure|array $target): RouteInterface
     {
         return $this->store->add(Route::make(
             uri: trim($uri, '/'),

@@ -3,11 +3,11 @@
 namespace Quill\Router\Middleware;
 
 use Closure;
-use Quill\Contracts\MiddlewareInterface;
+use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Request\Request;
 use Quill\Response\Response;
 
-final class ClosureMiddleware implements MiddlewareInterface
+final readonly class ClosureMiddleware implements MiddlewareInterface
 {
     public function __construct(private readonly Closure $middleware)
     {

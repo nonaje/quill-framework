@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Quill\Router;
 
+use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Support\Pattern\Singleton;
 
-class RouteStore extends Singleton
+class RouteStore extends Singleton implements RouteStoreInterface
 {
     private null|Route $current = null;
 

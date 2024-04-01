@@ -6,8 +6,8 @@ namespace Quill\Router;
 
 use Closure;
 use LogicException;
-use Quill\Contracts\MiddlewareInterface;
-use Quill\Contracts\RouteInterface;
+use Quill\Contracts\Router\MiddlewareInterface;
+use Quill\Contracts\Router\RouteInterface;
 use Quill\Enum\HttpMethod;
 
 final class Route implements RouteInterface
@@ -17,7 +17,7 @@ final class Route implements RouteInterface
         private readonly HttpMethod    $method,
         private readonly Closure|array $target,
         private readonly array         $params,
-        private RouteMiddlewareStore   $middlewares
+        private readonly RouteMiddlewareStore   $middlewares
     )
     {
     }

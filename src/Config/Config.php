@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Quill\Config;
 
+use Quill\Contracts\ConfigurationInterface;
 use Quill\Support\Dot\Parser;
 use Quill\Support\Pattern\Singleton;
 
-class Config extends Singleton
+class Config extends Singleton implements ConfigurationInterface
 {
     private array $items = [];
 
@@ -32,6 +33,21 @@ class Config extends Singleton
         return $this->searchInItems() ?? $default;
     }
 
+    private function searchInItems(): mixed
+    {
+        $value = null;
+
+        if ($this->parser->count() === 1) {
+            return $this->items[$this->parser->first()] ?? null;
+        }
+
+        foreach (array_slice($this->parser->list(), 1) as $pointer) {
+            $value = $this->items[$this->parser->first()][$pointer] ?? $value[$pointer] ?? null;
+        }
+
+        return $value;
+    }
+
     public function put(string $key, mixed $value): void
     {
         $key = strtolower($key);
@@ -47,20 +63,5 @@ class Config extends Singleton
         $reference = $value;
         unset($reference);
         $this->items = array_merge_recursive($result, $this->items);
-    }
-
-    private function searchInItems(): mixed
-    {
-        $value = null;
-
-        if ($this->parser->count() === 1) {
-            return $this->items[$this->parser->first()] ?? null;
-        }
-
-        foreach (array_slice($this->parser->list(), 1) as $pointer) {
-            $value = $this->items[$this->parser->first()][$pointer] ?? $value[$pointer] ?? null;
-        }
-
-        return $value;
     }
 }
