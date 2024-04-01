@@ -16,9 +16,5 @@ use Quill\Router\Route;
  */
 interface RouterInterface
 {
-    public function loadRoutes(Closure $toLoad): self;
-
     public function map(string $method, string $uri, Closure|array $target): RouteInterface;
-
-    public function dispatch(): void;
 }

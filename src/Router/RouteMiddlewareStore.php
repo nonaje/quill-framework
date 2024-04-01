@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Quill\Router;
 
 use Closure;
-use Quill\Contracts\MiddlewareInterface;
+use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Factory\MiddlewareFactory;
 
 final class RouteMiddlewareStore

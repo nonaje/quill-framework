@@ -6,7 +6,7 @@ namespace Quill\Factory;
 
 use Closure;
 use InvalidArgumentException;
-use Quill\Contracts\MiddlewareInterface;
+use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Router\Middleware\ArrayMiddleware;
 use Quill\Router\Middleware\ClosureMiddleware;
 use Quill\Router\Middleware\StringClassMiddleware;

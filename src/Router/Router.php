@@ -11,26 +11,15 @@ use Quill\Contracts\Router\RouterDispatcherInterface;
 use Quill\Contracts\Router\RouterInterface;
 use Quill\Enum\HttpMethod;
 use Quill\Support\Pattern\Singleton;
+use function PHPUnit\Framework\equalTo;
 
 class Router extends Singleton implements RouterInterface
 {
     protected function __construct(
-        private readonly RouterDispatcherInterface $dispatcher,
+        protected readonly RouterDispatcherInterface $dispatcher,
     )
     {
         parent::__construct();
-    }
-
-    public function loadRoutes(Closure $toLoad): self
-    {
-        $toLoad($this);
-
-        return $this;
-    }
-
-    public function dispatch(): void
-    {
-        $this->dispatcher->dispatch();
     }
 
     public function __call(string $method, array $arguments = [])
