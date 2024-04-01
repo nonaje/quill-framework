@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Quill\Router\Middleware;
 
 use Quill\Contracts\Router\MiddlewareInterface;

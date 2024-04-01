@@ -7,6 +7,7 @@ namespace Quill\Router;
 use Closure;
 use LogicException;
 use Quill\Contracts\Router\RouteInterface;
+use Quill\Contracts\Router\RouterDispatcherInterface;
 use Quill\Contracts\Router\RouterInterface;
 use Quill\Enum\HttpMethod;
 use Quill\Support\Pattern\Singleton;
@@ -14,8 +15,7 @@ use Quill\Support\Pattern\Singleton;
 class Router extends Singleton implements RouterInterface
 {
     protected function __construct(
-        private readonly RouteStore       $store,
-        private readonly RouterDispatcher $dispatcher,
+        private readonly RouterDispatcherInterface $dispatcher,
     )
     {
         parent::__construct();
@@ -30,7 +30,7 @@ class Router extends Singleton implements RouterInterface
 
     public function dispatch(): void
     {
-        $this->dispatcher->store($this->store)->dispatch();
+        $this->dispatcher->dispatch();
     }
 
     public function __call(string $method, array $arguments = [])
@@ -44,7 +44,7 @@ class Router extends Singleton implements RouterInterface
 
     public function map(string $method, string $uri, Closure|array $target): RouteInterface
     {
-        return $this->store->add(Route::make(
+        return $this->dispatcher->store->add(Route::make(
             uri: trim($uri, '/'),
             method: $method,
             target: $target,

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Quill\Contracts\Router;
 
 use Quill\Router\Route;
@@ -17,5 +19,4 @@ interface RouteStoreInterface
     public function routes(): array;
 
     public function count(): int;
-
 }

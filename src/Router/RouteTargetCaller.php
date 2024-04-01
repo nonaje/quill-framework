@@ -7,9 +7,9 @@ namespace Quill\Router;
 use Quill\Request\Request;
 use Quill\Response\Response;
 
-final class RouteTargetExecutor
+final class RouteTargetCaller
 {
-    public function dispatch(Request $request, Response $response): void
+    public function __invoke(Request $request, Response $response): void
     {
         $target = $request->route()->target();
 

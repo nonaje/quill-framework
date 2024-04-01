@@ -4,38 +4,32 @@ declare(strict_types=1);
 
 namespace Quill\Router;
 
-use Quill\Config\Config;
+use Quill\Contracts\Router\RouterDispatcherInterface;
+use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Request\Request;
 use Quill\Response\Response;
 
-readonly final class RouterDispatcher
+readonly final class RouterDispatcher implements RouterDispatcherInterface
 {
-    private RouteStore $store;
-
     public function __construct(
-        private Request             $request,
-        private Response            $response,
-        private Config              $config,
-        private RouteTargetExecutor $executor
+        private Request            $request,
+        private Response           $response,
+        public RouteStoreInterface $store,
+        private RouteTargetCaller  $caller
     )
     {
     }
 
     public function dispatch(): void
     {
-        $this->matchRoute();
-
-        if ($this->request->route() === null) {
-            $this->response->sendRouteNotFound();
-        }
-
-        $this->sendRequestThroughMiddlewares();
+        $this->foundRouteOrKill();
+        $this->walkThroughMiddlewares();
 
         // Call the route target
-        $this->executor->dispatch($this->request, $this->response);
+        $this->caller->__invoke($this->request, $this->response);
     }
 
-    private function matchRoute(): void
+    private function foundRouteOrKill(): void
     {
         foreach ($this->store->routes() as $route) {
             $this->store->current($route);
@@ -57,6 +51,8 @@ readonly final class RouterDispatcher
             $this->request->route($matched);
             return;
         }
+
+        $this->response->sendRouteNotFound();
     }
 
     private function matchRequestedUri(): bool
@@ -116,17 +112,10 @@ readonly final class RouterDispatcher
         return $params;
     }
 
-    private function sendRequestThroughMiddlewares(): void
+    private function walkThroughMiddlewares(): void
     {
-        foreach ($this->request->route()->middlewares()->all() as $middleware) {
+        foreach ($this->store->current()->middlewares()->all() as $middleware) {
             $middleware->handle($this->request, $this->response);
         }
-    }
-
-    public function store(RouteStore $store): self
-    {
-        $this->store = $store;
-
-        return $this;
     }
 }

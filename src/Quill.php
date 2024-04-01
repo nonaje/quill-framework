@@ -14,12 +14,10 @@ final class Quill extends Router
 {
     protected function __construct(
         public readonly ConfigurationInterface $config,
-        RouteStoreInterface                    $store,
         RouterDispatcher                       $dispatcher
     )
     {
-        parent::__construct($store, $dispatcher);
-
+        parent::__construct($dispatcher);
     }
 
     public function loadDotEnv(string $filename = null): self
@@ -44,17 +42,21 @@ final class Quill extends Router
         }
 
         if (is_file($filename)) {
-            $key = substr(basename($filename), 0, -4);
-            $this->config->put($key, require_once $filename);
+            $this->config->put(
+                key: substr(basename($filename), 0, -4),
+                value: require_once $filename
+            );
             return $this;
         }
 
         if (is_dir($filename)) {
             foreach (scandir($filename) as $filename) {
-                $key = substr(basename($filename), 0, -4);
-                $this->config->put($key, require_once $filename);
-                return $this;
+                $this->config->put(
+                    key: substr(basename($filename), 0, -4),
+                    value: require_once $filename
+                );
             }
+            return $this;
         }
 
         return $this;
