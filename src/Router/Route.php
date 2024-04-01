@@ -10,14 +10,14 @@ use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Enum\HttpMethod;
 
-final class Route implements RouteInterface
+final readonly class Route implements RouteInterface
 {
     private function __construct(
-        private readonly string               $uri,
-        private readonly HttpMethod           $method,
-        private readonly Closure|array        $target,
-        private readonly array                $params,
-        private readonly RouteMiddlewareStore $middlewares
+        private string               $uri,
+        private HttpMethod           $method,
+        private Closure|array        $target,
+        private array                $params,
+        private RouteMiddlewareStore $middlewares
     )
     {
     }

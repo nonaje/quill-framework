@@ -5,23 +5,35 @@ declare(strict_types=1);
 namespace Quill;
 
 use Quill\Contracts\ConfigurationInterface;
+use Quill\Contracts\Router\RouterDispatcherInterface;
+use Quill\Contracts\Router\RouteStoreInterface;
+use Quill\Request\Request;
+use Quill\Response\Response;
 use Quill\Router\Router;
 use Quill\Router\RouterDispatcher;
+use Quill\Router\RouteTargetCaller;
 use Quill\Support\Helpers\Path;
 
 final class Quill extends Router
 {
-    protected function __construct(
+    public function __construct(
         public readonly ConfigurationInterface $config,
-        RouterDispatcher                       $dispatcher
+        RouteStoreInterface                    $store
     )
     {
-        parent::__construct($dispatcher);
+        parent::__construct($store);
     }
 
-    public function dispatch(): void
+    public function handle(): void
     {
-        $this->dispatcher->dispatch();
+        $dispatcher = new RouterDispatcher(
+            request: Request::make(),
+            response: Response::make(),
+            store: $this->store,
+            caller: new RouteTargetCaller
+        );
+
+        $dispatcher->dispatch();
     }
 
     public function loadDotEnv(string $filename = null): self

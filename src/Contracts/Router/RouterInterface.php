@@ -17,4 +17,11 @@ use Quill\Router\Route;
 interface RouterInterface
 {
     public function map(string $method, string $uri, Closure|array $target): RouteInterface;
+
+    public function group(string $prefix, Closure $routes): RouteGroupInterface;
+
+    /**
+     * @return RouteInterface[]
+     */
+    public function routes(): array;
 }

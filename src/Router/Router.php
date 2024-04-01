@@ -6,20 +6,19 @@ namespace Quill\Router;
 
 use Closure;
 use LogicException;
+use Quill\Contracts\Router\RouteGroupInterface;
 use Quill\Contracts\Router\RouteInterface;
-use Quill\Contracts\Router\RouterDispatcherInterface;
 use Quill\Contracts\Router\RouterInterface;
+use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Enum\HttpMethod;
-use Quill\Support\Pattern\Singleton;
-use function PHPUnit\Framework\equalTo;
 
-class Router extends Singleton implements RouterInterface
+class Router implements RouterInterface
 {
-    protected function __construct(
-        protected readonly RouterDispatcherInterface $dispatcher,
+    public function __construct(
+        protected readonly RouteStoreInterface $store,
+        protected readonly string $prefix = ''
     )
     {
-        parent::__construct();
     }
 
     public function __call(string $method, array $arguments = [])
@@ -33,10 +32,20 @@ class Router extends Singleton implements RouterInterface
 
     public function map(string $method, string $uri, Closure|array $target): RouteInterface
     {
-        return $this->dispatcher->store->add(Route::make(
-            uri: trim($uri, '/'),
+        return $this->store->add(Route::make(
+            uri: $this->prefix . trim($uri, '/'),
             method: $method,
             target: $target,
         ));
+    }
+
+    public function group(string $prefix, Closure $routes): RouteGroupInterface
+    {
+        return $this->store->addGroup($prefix, $routes);
+    }
+
+    public function routes(): array
+    {
+        return $this->store->all();
     }
 }

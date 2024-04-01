@@ -31,7 +31,8 @@ readonly final class RouterDispatcher implements RouterDispatcherInterface
 
     private function foundRouteOrKill(): void
     {
-        foreach ($this->store->routes() as $route) {
+        dd($this->store->all());
+        foreach ($this->store->all() as $route) {
             $this->store->current($route);
 
             $match = $this->matchRequestedUri();

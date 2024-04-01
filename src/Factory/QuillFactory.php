@@ -17,14 +17,9 @@ final class QuillFactory
 {
     public static function make(): Quill
     {
-        return Quill::make(
+        return new Quill(
             config: Config::make(new Parser),
-            dispatcher: new RouterDispatcher(
-                request: Request::make(),
-                response: Response::make(),
-                store: RouteStore::make(),
-                caller: new RouteTargetCaller
-            )
+            store: new RouteStore
         );
     }
 }
