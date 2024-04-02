@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Quill\Router;
 
+use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouterDispatcherInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Request\Request;
@@ -22,44 +23,66 @@ readonly final class RouterDispatcher implements RouterDispatcherInterface
 
     public function dispatch(): void
     {
-        $this->foundRouteOrKill();
-        $this->walkThroughMiddlewares();
+        $route = $this->foundRouteOrKill(
+            $this->resolveRoutes()
+        );
+
+        if ($route === null) {
+            $this->response->sendRouteNotFound();
+        }
+
+        $this->walkThroughMiddlewares($route);
 
         // Call the route target
         $this->caller->__invoke($this->request, $this->response);
     }
 
-    private function foundRouteOrKill(): void
+    /**
+     * @return RouteInterface[]
+     */
+    private function resolveRoutes(): array
     {
-        dd($this->store->all());
-        foreach ($this->store->all() as $route) {
-            $this->store->current($route);
+        $routes = $this->store->routes();
 
-            $match = $this->matchRequestedUri();
+        foreach ($this->store->groups() as $group) {
+            $groupRoutes = $group->routes();
 
-            if (!$match) continue;
-
-            $params = $this->resolveRouteParams();
-
-            $this->store->update($matched = Route::make(
-                uri: $route->uri(),
-                method: $route->method()->value,
-                target: $route->target(),
-                params: $params,
-                middlewares: $route->middlewares()
-            ));
-
-            $this->request->route($matched);
-            return;
+            $routes = array_merge($routes, $groupRoutes);
         }
 
-        $this->response->sendRouteNotFound();
+        return $routes;
     }
 
-    private function matchRequestedUri(): bool
+    /**
+     * @param RouteInterface[] $routes
+     */
+    private function foundRouteOrKill(array $routes): null|RouteInterface
     {
-        $route = $this->store->current();
+        foreach ($routes as $route) {
+            if (! $this->matchRequestedUri($route)) continue;
 
+            // TODO: Move route params resolution to another step
+            // $params = $this->resolveRouteParams($route);
+
+            // $this->store->update($matched = Route::make(
+            //     uri: $route->uri(),
+            //     method: $route->method()->value,
+            //     target: $route->target(),
+            //     params: $params,
+            //     middlewares: $route->getMiddlewares()
+            // ));
+
+            $this->store->setMatchedRoute($route);
+            $this->request->setMatchedRoute($route);
+
+            return $route;
+        }
+
+        return null;
+    }
+
+    private function matchRequestedUri(RouteInterface $route): bool
+    {
         if ($route->method()->value !== $this->request->method()) {
             return false;
         }
@@ -85,17 +108,16 @@ readonly final class RouterDispatcher implements RouterDispatcherInterface
             }
         }
 
-        if (count(array_diff($searchedRouteParts, $replacedRegisteredUriWithParameters)) === 0) {
+        if (count(array_diff($replacedRegisteredUriWithParameters, $searchedRouteParts)) === 0) {
             return true;
         }
 
         return false;
     }
 
-    private function resolveRouteParams(): array
+    private function resolveRouteParams(RouteInterface $route): array
     {
         $params = [];
-        $route = $this->store->current();
 
         $routeParts = array_values(array_filter(explode('/', $route->uri())));
         $searchedRouteParts = array_values(array_filter(explode('/', $this->request->uri())));
@@ -113,9 +135,9 @@ readonly final class RouterDispatcher implements RouterDispatcherInterface
         return $params;
     }
 
-    private function walkThroughMiddlewares(): void
+    private function walkThroughMiddlewares(RouteInterface $route): void
     {
-        foreach ($this->store->current()->middlewares()->all() as $middleware) {
+        foreach ($route->getMiddlewares()->all() as $middleware) {
             $middleware->handle($this->request, $this->response);
         }
     }

@@ -18,7 +18,7 @@ final class ArrayMiddleware implements MiddlewareInterface
     {
         $this->middlewares = array_map(
             fn($middleware) => MiddlewareFactory::createMiddleware($middleware),
-            $middlewares
+            array_flatten($middlewares)
         );
     }
 

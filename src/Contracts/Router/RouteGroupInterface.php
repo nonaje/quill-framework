@@ -2,8 +2,14 @@
 
 namespace Quill\Contracts\Router;
 
+use Closure;
+
 interface RouteGroupInterface
 {
     /** @return RouteInterface[] */
-    public function resolveRoutes(): array;
+    public function routes(): array;
+
+    public function middleware(string|array|Closure|MiddlewareInterface $middleware): self;
+
+    public function getMiddlewares(): MiddlewareStoreInterface;
 }

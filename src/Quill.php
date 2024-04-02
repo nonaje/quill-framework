@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Quill;
 
 use Quill\Contracts\ConfigurationInterface;
+use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouterDispatcherInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Request\Request;
@@ -18,10 +19,11 @@ final class Quill extends Router
 {
     public function __construct(
         public readonly ConfigurationInterface $config,
-        RouteStoreInterface                    $store
+        RouteStoreInterface                    $store,
+        MiddlewareStoreInterface               $middlewares
     )
     {
-        parent::__construct($store);
+        parent::__construct($store, $middlewares);
     }
 
     public function handle(): void

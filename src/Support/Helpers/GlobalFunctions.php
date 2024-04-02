@@ -27,3 +27,20 @@ if (!function_exists('config')) {
         return $config->get($key, $default);
     }
 }
+
+if (!function_exists('array_flatten')) {
+    function array_flatten(array $toFlatten): array
+    {
+        $results = [];
+
+        foreach ($toFlatten as $value) {
+            if (is_array($value) && ! empty($value)) {
+                $results = array_merge($results, array_flatten($value));
+            } else {
+                $results[] = $value;
+            }
+        }
+
+        return array_values($results);
+    }
+}

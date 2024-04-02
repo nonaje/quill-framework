@@ -8,6 +8,7 @@ use Quill\Config\Config;
 use Quill\Quill;
 use Quill\Request\Request;
 use Quill\Response\Response;
+use Quill\Router\MiddlewareStore;
 use Quill\Router\RouterDispatcher;
 use Quill\Router\RouteStore;
 use Quill\Router\RouteTargetCaller;
@@ -19,7 +20,8 @@ final class QuillFactory
     {
         return new Quill(
             config: Config::make(new Parser),
-            store: new RouteStore
+            store: new RouteStore,
+            middlewares: new MiddlewareStore
         );
     }
 }

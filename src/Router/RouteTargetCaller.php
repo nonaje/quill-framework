@@ -11,10 +11,10 @@ final class RouteTargetCaller
 {
     public function __invoke(Request $request, Response $response): void
     {
-        $target = $request->route()->target();
+        $target = $request->getMatchedRoute()->target();
 
         if (is_callable($target)) {
-            $target($request, $response, ...$request->route()->params());
+            $target($request, $response);
             return;
         }
 
@@ -24,6 +24,6 @@ final class RouteTargetCaller
         (new $controller(
             request: $request,
             response: $response
-        ))->{$method}(...$request->route()->params());
+        ))->{$method}();
     }
 }

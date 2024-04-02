@@ -13,15 +13,29 @@ interface RouteStoreInterface
 
     public function addGroup(string $prefix, Closure $routes): RouteGroupInterface;
 
-    public function remove(Route $route): bool;
-
     public function update(Route $route): bool;
 
-    public function current(Route $route = null): null|RouteInterface;
+    public function setMatchedRoute(Route $route): self;
 
+    public function getMatchedRoute(): RouteInterface;
+
+    /**
+     * @return array<empty, empty>|RouteInterface[]
+     */
     public function routes(): array;
 
+    /**
+     * @return array<empty, empty>|RouteGroupInterface[]
+     */
     public function groups(): array;
+
+    /**
+     * Sum of the routes and the groups' routes
+     * Returns a single level array
+     *
+     * @return array<empty, empty>|RouteInterface[]
+     */
+    public function all(): array;
 
     public function count(): int;
 }

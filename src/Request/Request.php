@@ -17,9 +17,21 @@ class Request extends Singleton
         return ['foo' => 'bar'];
     }
 
-    public function route(Route $route = null): null|Route
+    public function route(string $key, mixed $default = null): mixed
     {
-        return $this->route ?: $this->route = $route;
+        return $this->route->params()[$key] ?? $default;
+    }
+
+    public function setMatchedRoute(Route $route): self
+    {
+        $this->route = $route;
+
+        return $this;
+    }
+
+    public function getMatchedRoute(): null|Route
+    {
+        return $this->route;
     }
 
     public function method(): string

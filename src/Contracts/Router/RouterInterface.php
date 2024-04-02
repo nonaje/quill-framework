@@ -20,8 +20,7 @@ interface RouterInterface
 
     public function group(string $prefix, Closure $routes): RouteGroupInterface;
 
-    /**
-     * @return RouteInterface[]
-     */
+    public function middleware(string|array|Closure|MiddlewareInterface $middleware): RouterInterface;
+
     public function routes(): array;
 }

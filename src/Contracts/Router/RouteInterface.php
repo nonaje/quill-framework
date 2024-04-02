@@ -6,7 +6,6 @@ namespace Quill\Contracts\Router;
 
 use Closure;
 use Quill\Enum\HttpMethod;
-use Quill\Router\RouteMiddlewareStore;
 
 interface RouteInterface
 {
@@ -20,5 +19,5 @@ interface RouteInterface
 
     public function params(): array;
 
-    public function middlewares(): RouteMiddlewareStore;
+    public function getMiddlewares(): MiddlewareStoreInterface;
 }

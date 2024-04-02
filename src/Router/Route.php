@@ -7,6 +7,7 @@ namespace Quill\Router;
 use Closure;
 use LogicException;
 use Quill\Contracts\Router\MiddlewareInterface;
+use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Enum\HttpMethod;
 
@@ -17,7 +18,7 @@ final readonly class Route implements RouteInterface
         private HttpMethod           $method,
         private Closure|array        $target,
         private array                $params,
-        private RouteMiddlewareStore $middlewares
+        private MiddlewareStoreInterface $middlewares
     )
     {
     }
@@ -27,7 +28,7 @@ final readonly class Route implements RouteInterface
         string               $method,
         array|Closure        $target,
         array                $params = [],
-        RouteMiddlewareStore $middlewares = null
+        MiddlewareStoreInterface $middlewares = new MiddlewareStore
     ): self
     {
         $uri = str_starts_with($uri, '/') ? $uri : '/' . $uri;
@@ -37,7 +38,7 @@ final readonly class Route implements RouteInterface
             method: HttpMethod::{strtoupper($method)},
             target: $target,
             params: $params,
-            middlewares: $middlewares ?? new RouteMiddlewareStore()
+            middlewares: $middlewares
         );
 
         return $route->assert();
@@ -122,7 +123,7 @@ final readonly class Route implements RouteInterface
         return $this->params;
     }
 
-    public function middlewares(): RouteMiddlewareStore
+    public function getMiddlewares(): MiddlewareStoreInterface
     {
         return $this->middlewares;
     }

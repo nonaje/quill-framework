@@ -11,7 +11,7 @@ use \Closure;
 
 class RouteStore implements RouteStoreInterface
 {
-    private null|Route $current = null;
+    private null|Route $matchedRoute = null;
 
     /** @var array<empty, empty>|RouteInterface[] $routes */
     private array $routes = [];
@@ -28,25 +28,14 @@ class RouteStore implements RouteStoreInterface
 
     public function addGroup(string $prefix, Closure $routes): RouteGroupInterface
     {
-        $group = RouteGroup::make($prefix, $routes, new self);
+        $group = RouteGroup::make($prefix, $routes);
 
         $this->groups[] = $group;
 
         return $group;
     }
 
-    public function remove(RouteInterface $route): bool
-    {
-        $index = $this->find($route);
-
-        if (is_integer($index)) {
-            unset($this->routes[$index]);
-        }
-
-        return is_integer($index);
-    }
-
-    private function find(Route $searched): null|int
+    private function find(RouteInterface $searched): null|int
     {
         foreach ($this->all() as $key => $route) {
             if ($route->method() === $searched->method() && $route->uri() === $searched->uri()) {
@@ -68,9 +57,16 @@ class RouteStore implements RouteStoreInterface
         return is_integer($index);
     }
 
-    public function current(RouteInterface $route = null): null|RouteInterface
+    public function setMatchedRoute(Route $route): RouteStoreInterface
     {
-        return $route ? $this->current = $route : $this->current;
+        $this->matchedRoute = $route;
+
+        return $this;
+    }
+
+    public function getMatchedRoute(): RouteInterface
+    {
+        return $this->matchedRoute;
     }
 
     public function routes(): array
@@ -85,7 +81,7 @@ class RouteStore implements RouteStoreInterface
 
     public function all(): array
     {
-        return array_merge($this->routes(), $this->resolveRouteGroups());
+        return array_merge($this->routes(), $this->resolveGroupsRoutes());
     }
 
     public function count(): int
@@ -93,14 +89,13 @@ class RouteStore implements RouteStoreInterface
         return count($this->routes);
     }
 
-    private function resolveRouteGroups(): array
+    private function resolveGroupsRoutes(): array
     {
         $routes = [];
 
         foreach ($this->groups() as $group) {
-            $routes = array_merge($routes, $group->resolveRoutes());
+            $routes = array_merge($routes, $group->routes());
         }
-
 
         return $routes;
     }

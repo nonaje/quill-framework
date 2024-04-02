@@ -6,16 +6,26 @@ namespace Quill\Router;
 
 use Closure;
 use Quill\Contracts\Router\MiddlewareInterface;
+use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Factory\MiddlewareFactory;
 
-final class RouteMiddlewareStore
+final class MiddlewareStore implements MiddlewareStoreInterface
 {
     /** @var MiddlewareInterface[] $stack */
     private array $stack = [];
 
-    public function add(string|array|Closure|MiddlewareInterface $middleware): void
+    public function add(string|array|Closure|MiddlewareInterface $middleware): self
     {
         $this->stack[] = MiddlewareFactory::createMiddleware($middleware);
+
+        return $this;
+    }
+
+    public function reset(): self
+    {
+        $this->stack = [];
+
+        return $this;
     }
 
     /**
