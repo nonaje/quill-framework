@@ -38,28 +38,12 @@ readonly final class RouterDispatcher implements RouterDispatcherInterface
     }
 
     /**
-     * @return RouteInterface[]
-     */
-    private function resolveRoutes(): array
-    {
-        $routes = $this->store->routes();
-
-        foreach ($this->store->groups() as $group) {
-            $groupRoutes = $group->routes();
-
-            $routes = array_merge($routes, $groupRoutes);
-        }
-
-        return $routes;
-    }
-
-    /**
      * @param RouteInterface[] $routes
      */
     private function foundRouteOrKill(array $routes): null|RouteInterface
     {
         foreach ($routes as $route) {
-            if (! $this->matchRequestedUri($route)) continue;
+            if (!$this->matchRequestedUri($route)) continue;
 
             // TODO: Move route params resolution to another step
             // $params = $this->resolveRouteParams($route);
@@ -115,6 +99,29 @@ readonly final class RouterDispatcher implements RouterDispatcherInterface
         return false;
     }
 
+    /**
+     * @return RouteInterface[]
+     */
+    private function resolveRoutes(): array
+    {
+        $routes = $this->store->routes();
+
+        foreach ($this->store->groups() as $group) {
+            $groupRoutes = $group->routes();
+
+            $routes = array_merge($routes, $groupRoutes);
+        }
+
+        return $routes;
+    }
+
+    private function walkThroughMiddlewares(RouteInterface $route): void
+    {
+        foreach ($route->getMiddlewares()->all() as $middleware) {
+            $middleware->handle($this->request, $this->response);
+        }
+    }
+
     private function resolveRouteParams(RouteInterface $route): array
     {
         $params = [];
@@ -133,12 +140,5 @@ readonly final class RouterDispatcher implements RouterDispatcherInterface
         }
 
         return $params;
-    }
-
-    private function walkThroughMiddlewares(RouteInterface $route): void
-    {
-        foreach ($route->getMiddlewares()->all() as $middleware) {
-            $middleware->handle($this->request, $this->response);
-        }
     }
 }

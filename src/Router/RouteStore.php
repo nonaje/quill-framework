@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Quill\Router;
 
+use Closure;
 use Quill\Contracts\Router\RouteGroupInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
-use \Closure;
 
 class RouteStore implements RouteStoreInterface
 {
@@ -35,17 +35,6 @@ class RouteStore implements RouteStoreInterface
         return $group;
     }
 
-    private function find(RouteInterface $searched): null|int
-    {
-        foreach ($this->all() as $key => $route) {
-            if ($route->method() === $searched->method() && $route->uri() === $searched->uri()) {
-                return $key;
-            }
-        }
-
-        return null;
-    }
-
     public function update(RouteInterface $route): bool
     {
         $index = $this->find($route);
@@ -57,26 +46,15 @@ class RouteStore implements RouteStoreInterface
         return is_integer($index);
     }
 
-    public function setMatchedRoute(Route $route): RouteStoreInterface
+    private function find(RouteInterface $searched): null|int
     {
-        $this->matchedRoute = $route;
+        foreach ($this->all() as $key => $route) {
+            if ($route->method() === $searched->method() && $route->uri() === $searched->uri()) {
+                return $key;
+            }
+        }
 
-        return $this;
-    }
-
-    public function getMatchedRoute(): RouteInterface
-    {
-        return $this->matchedRoute;
-    }
-
-    public function routes(): array
-    {
-        return $this->routes;
-    }
-
-    public function groups(): array
-    {
-        return $this->groups;
+        return null;
     }
 
     public function all(): array
@@ -84,9 +62,9 @@ class RouteStore implements RouteStoreInterface
         return array_merge($this->routes(), $this->resolveGroupsRoutes());
     }
 
-    public function count(): int
+    public function routes(): array
     {
-        return count($this->routes);
+        return $this->routes;
     }
 
     private function resolveGroupsRoutes(): array
@@ -98,5 +76,27 @@ class RouteStore implements RouteStoreInterface
         }
 
         return $routes;
+    }
+
+    public function groups(): array
+    {
+        return $this->groups;
+    }
+
+    public function getMatchedRoute(): RouteInterface
+    {
+        return $this->matchedRoute;
+    }
+
+    public function setMatchedRoute(Route $route): RouteStoreInterface
+    {
+        $this->matchedRoute = $route;
+
+        return $this;
+    }
+
+    public function count(): int
+    {
+        return count($this->routes);
     }
 }

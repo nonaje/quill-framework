@@ -17,9 +17,9 @@ use Quill\Enum\HttpMethod;
 class Router implements RouterInterface
 {
     public function __construct(
-        protected readonly RouteStoreInterface $store,
+        protected readonly RouteStoreInterface      $store,
         protected readonly MiddlewareStoreInterface $middlewares,
-        protected readonly string $prefix = ''
+        protected readonly string                   $prefix = ''
     )
     {
     }

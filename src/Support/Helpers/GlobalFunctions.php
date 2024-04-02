@@ -34,7 +34,7 @@ if (!function_exists('array_flatten')) {
         $results = [];
 
         foreach ($toFlatten as $value) {
-            if (is_array($value) && ! empty($value)) {
+            if (is_array($value) && !empty($value)) {
                 $results = array_merge($results, array_flatten($value));
             } else {
                 $results[] = $value;

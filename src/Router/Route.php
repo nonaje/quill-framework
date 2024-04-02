@@ -14,20 +14,20 @@ use Quill\Enum\HttpMethod;
 final readonly class Route implements RouteInterface
 {
     private function __construct(
-        private string               $uri,
-        private HttpMethod           $method,
-        private Closure|array        $target,
-        private array                $params,
+        private string                   $uri,
+        private HttpMethod               $method,
+        private Closure|array            $target,
+        private array                    $params,
         private MiddlewareStoreInterface $middlewares
     )
     {
     }
 
     public static function make(
-        string               $uri,
-        string               $method,
-        array|Closure        $target,
-        array                $params = [],
+        string                   $uri,
+        string                   $method,
+        array|Closure            $target,
+        array                    $params = [],
         MiddlewareStoreInterface $middlewares = new MiddlewareStore
     ): self
     {

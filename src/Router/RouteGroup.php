@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Quill\Router;
 
 use Closure;
+use LogicException;
 use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteGroupInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouterInterface;
-use \LogicException;
 
 readonly class RouteGroup implements RouteGroupInterface
 {
@@ -29,6 +31,11 @@ readonly class RouteGroup implements RouteGroupInterface
         $routes($router);
 
         return $group->assert();
+    }
+
+    private function assert(): RouteGroupInterface
+    {
+        return $this;
     }
 
     public function routes(MiddlewareStoreInterface $parentMiddlewares = null): array
@@ -62,21 +69,17 @@ readonly class RouteGroup implements RouteGroupInterface
         return $routes;
     }
 
-    public function middleware(array|string|Closure|MiddlewareInterface $middleware): RouteGroupInterface
-    {
-        $this->middlewares->add($middleware);
-
-        return $this;
-    }
-
     public function getMiddlewares(): MiddlewareStoreInterface
     {
         return $this->middlewares;
     }
 
     // TODO: Review group validations
-    private function assert(): RouteGroupInterface
+
+    public function middleware(array|string|Closure|MiddlewareInterface $middleware): RouteGroupInterface
     {
+        $this->middlewares->add($middleware);
+
         return $this;
     }
 }

@@ -6,7 +6,6 @@ namespace Quill;
 
 use Quill\Contracts\ConfigurationInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
-use Quill\Contracts\Router\RouterDispatcherInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Request\Request;
 use Quill\Response\Response;
