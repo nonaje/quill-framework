@@ -37,12 +37,8 @@ class Config extends Singleton implements ConfigurationInterface
     {
         $value = null;
 
-        if ($this->parser->count() === 1) {
-            return $this->items[$this->parser->first()] ?? null;
-        }
-
-        foreach (array_slice($this->parser->list(), 1) as $pointer) {
-            $value = $this->items[$this->parser->first()][$pointer] ?? $value[$pointer] ?? null;
+        foreach ($this->parser->list() as $pointer) {
+            $value = $this->items[$pointer] ?? $value[$pointer] ?? null;
         }
 
         return $value;
