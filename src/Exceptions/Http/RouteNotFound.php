@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Quill\Exceptions\Http;
 
-use Quill\Enum\HttpCode;
+use Quill\Enum\Http\HttpCode;
 use RuntimeException;
 
 class RouteNotFound extends RuntimeException

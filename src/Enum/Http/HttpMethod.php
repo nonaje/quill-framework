@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Quill\Enum;
+namespace Quill\Enum\Http;
+
+use Quill\Enum\Steroids;
 
 enum HttpMethod: string
 {

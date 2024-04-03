@@ -4,36 +4,52 @@ declare(strict_types=1);
 
 namespace Quill\Response;
 
+use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Quill\Contracts\Response\ResponseInterface;
+use Quill\Enum\Http\HttpCode;
+use Quill\Enum\Http\HttpHeader;
+use Quill\Enum\Http\MimeType;
+use Quill\Factory\Psr7\Psr7Factory;
 use Quill\Support\Pattern\Singleton;
 
 class Response extends Singleton implements ResponseInterface
 {
-    public static function sendRouteNotFound(): never
+    protected function __construct(
+        private PsrResponseInterface $psrResponse
+    )
     {
-        static::send([
-            'success' => false,
-            'message' => "Route not found",
-        ], 404);
+        parent::__construct();
     }
 
-    public static function send(array $payload = [], int $status = 200, array $headers = []): never
+    public function getPsrResponse(): PsrResponseInterface
     {
-        $headers['Content-Type'] ??= 'application/json';
+        return $this->psrResponse;
+    }
 
-        foreach ($headers as $key => $value) {
-            if (is_int($key)) {
-                header($value);
-            }
+    public function setPsrResponse(PsrResponseInterface $response): self
+    {
+        $this->psrResponse = $response;
 
-            if (is_string($key)) {
-                header("$key: $value");
-            }
-        }
+        return $this;
+    }
 
-        http_response_code($status);
+    public function json(array $data): self
+    {
+        $content = json_encode($data);
 
-        echo json_encode($payload);
-        die;
+        $stream = Psr7Factory::streamFactory()->createStream($content);
+
+        $response = $this->getPsrResponse()
+            ->withBody($stream)
+            ->withHeader(HttpHeader::CONTENT_TYPE->value, MimeType::JSON->value);
+
+        return $this->setPsrResponse($response);
+    }
+
+    public function code(HttpCode $code): self
+    {
+        $response = $this->psrResponse->withStatus($code->value);
+
+        return $this->setPsrResponse($response);
     }
 }

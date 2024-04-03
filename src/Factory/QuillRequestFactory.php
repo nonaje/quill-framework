@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Quill\Factory;
 
 use Nyholm\Psr7Server\ServerRequestCreator;
@@ -19,9 +21,9 @@ class QuillRequestFactory extends Psr7Factory
     {
         return (new ServerRequestCreator(
             serverRequestFactory: static::serverRequestFactory(),
-            uriFactory: static::uriFactoryFactory(),
-            uploadedFileFactory: static::uploadedFileFactoryFactory(),
-            streamFactory: static::streamFactoryFactory()
+            uriFactory: static::uriFactory(),
+            uploadedFileFactory: static::uploadedFileFactory(),
+            streamFactory: static::streamFactory()
         ))->fromGlobals();
     }
 }

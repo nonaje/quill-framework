@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Quill\Contracts\Router;
 
 use Closure;
-use Quill\Enum\HttpMethod;
+use Quill\Enum\Http\HttpMethod;
 
 interface RouteInterface
 {

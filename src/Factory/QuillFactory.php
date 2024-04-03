@@ -21,11 +21,7 @@ final class QuillFactory
         $errorHandler = new class implements ErrorHandlerInterface {
             public function capture(Throwable $e): ResponseInterface
             {
-                Response::make()->send([
-                    'success' => false,
-                    'code' => $e->getCode(),
-                    'message' => $e->getMessage(),
-                ]);
+                dd($e);
             }
         };
 

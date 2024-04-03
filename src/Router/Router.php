@@ -12,7 +12,7 @@ use Quill\Contracts\Router\RouteGroupInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouterInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
-use Quill\Enum\HttpMethod;
+use Quill\Enum\Http\HttpMethod;
 
 class Router implements RouterInterface
 {
