@@ -13,11 +13,12 @@ final class ExecuteRouteMiddlewares
 {
     public function __invoke(RequestInterface $request, Closure $next): ResponseInterface
     {
+        $response = null;
         $middlewares = array_flatten($request->getMatchedRoute()->getMiddlewares()->all());
 
         if ($middlewares) {
             // TODO: Pipeline result must be ResponseInterface and sent to $next() as $response
-            (new Pipeline())
+            $response = (new Pipeline())
                 ->send($request)
                 ->using($middlewares)
                 ->method('handle')

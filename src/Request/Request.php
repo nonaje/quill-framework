@@ -4,18 +4,30 @@ declare(strict_types=1);
 
 namespace Quill\Request;
 
+use Psr\Http\Message\ServerRequestInterface;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Router\Route;
 use Quill\Support\Pattern\Singleton;
 
-// TODO: PSR-7 Implementation
 class Request extends Singleton implements RequestInterface
 {
     private null|Route $route = null;
 
+    protected function __construct(
+        private readonly ServerRequestInterface $psrRequest
+    )
+    {
+        parent::__construct();
+    }
+
+    public function psrRequest(): ServerRequestInterface
+    {
+        return $this->psrRequest;
+    }
+
     public function body(): array
     {
-        return ['foo' => 'bar'];
+        return json_decode($this->psrRequest()->getBody()->getContents(), true);
     }
 
     public function route(string $key, mixed $default = null): mixed

@@ -54,6 +54,13 @@ final class Quill extends Router
         return $this->errorHandler;
     }
 
+    public function setErrorHandler(ErrorHandlerInterface $errorHandler): self
+    {
+        $this->errorHandler = $errorHandler;
+
+        return $this;
+    }
+
     public function loadDotEnv(string $filename = null): self
     {
         $filename ??= Path::applicationFile('.env');
@@ -94,13 +101,6 @@ final class Quill extends Router
             }
             return $this;
         }
-
-        return $this;
-    }
-
-    public function setErrorHandler(ErrorHandlerInterface $errorHandler): self
-    {
-        $this->errorHandler = $errorHandler;
 
         return $this;
     }
