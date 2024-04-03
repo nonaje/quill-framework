@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Quill\Factory;
 
 use Quill\Contracts\Response\ResponseInterface;
