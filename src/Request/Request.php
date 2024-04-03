@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Quill\Request;
 
+use Quill\Contracts\Request\RequestInterface;
 use Quill\Router\Route;
 use Quill\Support\Pattern\Singleton;
 
 // TODO: PSR-7 Implementation
-class Request extends Singleton
+class Request extends Singleton implements RequestInterface
 {
     private null|Route $route = null;
 
@@ -41,6 +42,6 @@ class Request extends Singleton
 
     public function uri(): string
     {
-        return $this->route?->uri() ?? $_SERVER['REQUEST_URI'];
+        return $_SERVER['REQUEST_URI'];
     }
 }

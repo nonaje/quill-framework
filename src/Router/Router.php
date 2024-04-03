@@ -49,10 +49,13 @@ class Router implements RouterInterface
 
     public function group(string $prefix, Closure $routes): RouteGroupInterface
     {
-        $prefix = $this->prefix . $prefix;
-
-        $group = $this->store->addGroup($prefix, $routes)
-            ->middleware($this->middlewares->all());
+        $group = $this->store->addGroup(
+            RouteGroup::make(
+                prefix: $this->prefix . $prefix,
+                routes: $routes,
+                middlewares: clone $this->middlewares
+            )
+        );
 
         $this->middlewares->reset();
 

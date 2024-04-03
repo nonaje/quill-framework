@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Quill\Router\Middleware;
 
 use LogicException;
+use Quill\Contracts\Request\RequestInterface;
+use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Request\Request;
 use Quill\Response\Response;
@@ -19,7 +21,6 @@ final class StringClassMiddleware implements MiddlewareInterface
     private function assert(): void
     {
         $registeredMiddlewares = config("app.middlewares", []);
-
         $middlewareIsNotRegistered = !in_array($this->middleware, $registeredMiddlewares);
         if ($middlewareIsNotRegistered) {
             throw new LogicException("Middleware: '{$this->middleware}' is not registered in app config");
@@ -31,11 +32,11 @@ final class StringClassMiddleware implements MiddlewareInterface
         }
     }
 
-    public function handle(Request $request, Response $response): void
+    public function handle(RequestInterface $request, ResponseInterface $response, \Closure $next): void
     {
         /** @var MiddlewareInterface $middleware */
         $middleware = new $this->middleware;
 
-        $middleware->handle($request, $response);
+        $middleware->handle($request, $response, $next);
     }
 }

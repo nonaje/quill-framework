@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Quill\Config;
 
-use Quill\Contracts\ConfigurationInterface;
+use Quill\Contracts\Configuration\ConfigurationInterface;
 use Quill\Support\Dot\Parser;
 use Quill\Support\Pattern\Singleton;
 

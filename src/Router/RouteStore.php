@@ -26,10 +26,8 @@ class RouteStore implements RouteStoreInterface
         return $route;
     }
 
-    public function addGroup(string $prefix, Closure $routes): RouteGroupInterface
+    public function addGroup(RouteGroupInterface $group): RouteGroupInterface
     {
-        $group = RouteGroup::make($prefix, $routes);
-
         $this->groups[] = $group;
 
         return $group;

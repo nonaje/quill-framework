@@ -11,7 +11,7 @@ interface RouteStoreInterface
 {
     public function add(Route $route): RouteInterface;
 
-    public function addGroup(string $prefix, Closure $routes): RouteGroupInterface;
+    public function addGroup(RouteGroupInterface $group): RouteGroupInterface;
 
     public function update(Route $route): bool;
 

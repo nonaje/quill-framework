@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Quill\Response;
 
+use Quill\Contracts\Response\ResponseInterface;
 use Quill\Support\Pattern\Singleton;
 
-class Response extends Singleton
+class Response extends Singleton implements ResponseInterface
 {
     public static function sendRouteNotFound(): never
     {

@@ -18,14 +18,18 @@ readonly class RouteGroup implements RouteGroupInterface
     {
     }
 
-    public static function make(string $prefix, Closure $routes): RouteGroupInterface
+    public static function make(
+        string $prefix,
+        Closure $routes,
+        MiddlewareStoreInterface $middlewares = new MiddlewareStore
+    ): RouteGroupInterface
     {
         $prefix = str_starts_with($prefix, '/') ? $prefix : '/' . $prefix;
         $prefix = str_ends_with($prefix, '/') ? $prefix : $prefix . '/';
 
         $router = new Router(new RouteStore, new MiddlewareStore, $prefix);
 
-        $group = new RouteGroup($router, new MiddlewareStore);
+        $group = new RouteGroup($router, $middlewares);
 
         // Register routes inside a group definition
         $routes($router);
@@ -35,6 +39,7 @@ readonly class RouteGroup implements RouteGroupInterface
 
     private function assert(): RouteGroupInterface
     {
+        // TODO: Review group validations
         return $this;
     }
 
@@ -50,14 +55,16 @@ readonly class RouteGroup implements RouteGroupInterface
             if ($unsolved instanceof RouteInterface) {
                 $routeMiddlewares = array_merge_recursive($groupMiddlewares, $unsolved->getMiddlewares()->all());
 
-                $unsolved->getMiddlewares()->reset()->add($routeMiddlewares);
+                if ($routeMiddlewares) {
+                    $unsolved->getMiddlewares()->reset()->add($routeMiddlewares);
+                }
 
                 $routes[] = $unsolved;
                 continue;
             }
 
             if ($unsolved instanceof RouteGroupInterface) {
-                $routes = array_merge($routes, $unsolved->routes($groupMiddlewares));
+                $routes = array_merge($routes, $unsolved->routes());
                 continue;
             }
 
@@ -73,8 +80,6 @@ readonly class RouteGroup implements RouteGroupInterface
     {
         return $this->middlewares;
     }
-
-    // TODO: Review group validations
 
     public function middleware(array|string|Closure|MiddlewareInterface $middleware): RouteGroupInterface
     {

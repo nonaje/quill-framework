@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Quill\Router\Middleware;
 
+use Quill\Contracts\Request\RequestInterface;
+use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Factory\MiddlewareFactory;
-use Quill\Request\Request;
-use Quill\Response\Response;
+use Quill\Support\Pattern\Pipeline;
 
 final class ArrayMiddleware implements MiddlewareInterface
 {
     /** @var MiddlewareInterface[] */
-    private array $middlewares;
+    public array $middlewares;
 
     public function __construct(array $middlewares)
     {
@@ -22,10 +23,14 @@ final class ArrayMiddleware implements MiddlewareInterface
         );
     }
 
-    public function handle(Request $request, Response $response): void
+    public function handle(RequestInterface $request, ResponseInterface $response, \Closure $next): void
     {
-        foreach ($this->middlewares as $middleware) {
-            $middleware->handle($request, $response);
-        }
+        (new Pipeline())
+            ->send($request, $response)
+            ->via($this->middlewares)
+            ->method('handle')
+            ->exec();
+
+        $next($request, $response);
     }
 }

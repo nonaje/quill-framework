@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Quill\Router\Middleware;
 
 use LogicException;
+use Quill\Contracts\Request\RequestInterface;
+use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Request\Request;
 use Quill\Response\Response;
@@ -31,13 +33,13 @@ final class StringMiddleware implements MiddlewareInterface
         }
     }
 
-    public function handle(Request $request, Response $response): void
+    public function handle(RequestInterface $request, ResponseInterface $response, \Closure $next): void
     {
         $class = config("app.middlewares.{$this->middleware}");
 
         /** @var MiddlewareInterface $middleware */
         $middleware = new $class;
 
-        $middleware->handle($request, $response);
+        $middleware->handle($request, $response, $next);
     }
 }

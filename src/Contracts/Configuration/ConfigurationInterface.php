@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quill\Contracts;
+namespace Quill\Contracts\Configuration;
 
 interface ConfigurationInterface
 {

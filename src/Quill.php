@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace Quill;
 
-use Quill\Contracts\ConfigurationInterface;
+use Quill\Contracts\Configuration\ConfigurationInterface;
+use Quill\Contracts\Request\RequestInterface;
+use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
-use Quill\Request\Request;
 use Quill\Response\Response;
 use Quill\Router\Router;
-use Quill\Router\RouterDispatcher;
-use Quill\Router\RouteTargetCaller;
 use Quill\Support\Helpers\Path;
+use Quill\Support\Pattern\Pipeline;
+use Quill\Support\Pipes\ExecuteRouteMiddlewares;
+use Quill\Support\Pipes\ExecuteRouteTarget;
+use Quill\Support\Pipes\IdentifySearchedRoute;
+use Quill\Support\Pipes\ResolveRouteParameters;
 
 final class Quill extends Router
 {
@@ -25,16 +29,24 @@ final class Quill extends Router
         parent::__construct($store, $middlewares);
     }
 
-    public function handle(): void
+    public function handle(RequestInterface $request): ResponseInterface
     {
-        $dispatcher = new RouterDispatcher(
-            request: Request::make(),
-            response: Response::make(),
-            store: $this->store,
-            caller: new RouteTargetCaller
-        );
+        try {
+            /** @var ResponseInterface $response */
+            $response = (new Pipeline())
+                ->send($request, Response::make(), $this->store)
+                ->via([
+                    IdentifySearchedRoute::class,
+                    ResolveRouteParameters::class,
+                    ExecuteRouteMiddlewares::class,
+                    ExecuteRouteTarget::class
+                ])
+                ->exec();
+        } catch (\Throwable $e) {
+            dd($e);
+        }
 
-        $dispatcher->dispatch();
+        return $response;
     }
 
     public function loadDotEnv(string $filename = null): self

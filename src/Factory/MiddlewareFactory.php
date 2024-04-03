@@ -17,7 +17,7 @@ final class MiddlewareFactory
     public static function createMiddleware(string|array|Closure|MiddlewareInterface $middleware): MiddlewareInterface
     {
         return match (true) {
-            is_a($middleware, MiddlewareInterface::class) => $middleware,
+            $middleware instanceof MiddlewareInterface => $middleware,
             is_callable($middleware) => self::createMiddlewareFromClosure($middleware),
             is_array($middleware) => self::createMiddlewareFromArray($middleware),
             class_exists($middleware) => self::createMiddlewareFromStringClass($middleware),
