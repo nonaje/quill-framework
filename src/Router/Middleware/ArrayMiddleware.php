@@ -23,14 +23,14 @@ final class ArrayMiddleware implements MiddlewareInterface
         );
     }
 
-    public function handle(RequestInterface $request, ResponseInterface $response, \Closure $next): void
+    public function handle(RequestInterface $request, \Closure $next): void
     {
         (new Pipeline())
-            ->send($request, $response)
-            ->via($this->middlewares)
+            ->send($request)
+            ->using($this->middlewares)
             ->method('handle')
             ->exec();
 
-        $next($request, $response);
+        $next($request);
     }
 }

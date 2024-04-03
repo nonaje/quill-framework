@@ -4,24 +4,27 @@ declare(strict_types=1);
 
 namespace Quill;
 
+use InvalidArgumentException;
 use Quill\Contracts\Configuration\ConfigurationInterface;
+use Quill\Contracts\Handler\ErrorHandlerInterface;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
-use Quill\Response\Response;
+use Quill\Pipes\ExecuteRouteMiddlewares;
+use Quill\Pipes\ExecuteRouteTarget;
+use Quill\Pipes\HandlePossibleFutureError;
+use Quill\Pipes\IdentifySearchedRoute;
+use Quill\Pipes\ResolveRouteParameters;
 use Quill\Router\Router;
 use Quill\Support\Helpers\Path;
 use Quill\Support\Pattern\Pipeline;
-use Quill\Support\Pipes\ExecuteRouteMiddlewares;
-use Quill\Support\Pipes\ExecuteRouteTarget;
-use Quill\Support\Pipes\IdentifySearchedRoute;
-use Quill\Support\Pipes\ResolveRouteParameters;
 
 final class Quill extends Router
 {
     public function __construct(
         public readonly ConfigurationInterface $config,
+        private ErrorHandlerInterface          $errorHandler,
         RouteStoreInterface                    $store,
         MiddlewareStoreInterface               $middlewares
     )
@@ -31,33 +34,33 @@ final class Quill extends Router
 
     public function handle(RequestInterface $request): ResponseInterface
     {
-        try {
-            /** @var ResponseInterface $response */
-            $response = (new Pipeline())
-                ->send($request, Response::make(), $this->store)
-                ->via([
-                    IdentifySearchedRoute::class,
-                    ResolveRouteParameters::class,
-                    ExecuteRouteMiddlewares::class,
-                    ExecuteRouteTarget::class
-                ])
-                ->exec();
-        } catch (\Throwable $e) {
-            dd($e);
-        }
+        /** @var ResponseInterface $response */
+        $response = (new Pipeline())
+            ->send($request)
+            ->using([
+                new HandlePossibleFutureError($this->getErrorHandler()),
+                new IdentifySearchedRoute($this->store),
+                ResolveRouteParameters::class,
+                ExecuteRouteMiddlewares::class,
+                ExecuteRouteTarget::class
+            ])
+            ->exec();
 
         return $response;
     }
+
 
     public function loadDotEnv(string $filename = null): self
     {
         $filename ??= Path::applicationFile('.env');
 
-        if (file_exists($filename)) {
-            // Load .env into configuration items
-            $env = parse_ini_file($filename);
-            config()->put('env', array_combine(array_map('strtolower', array_keys($env)), array_values($env)));
+        if (! file_exists($filename)) {
+            throw new InvalidArgumentException();
         }
+
+        // Load .env into configuration items
+        $env = parse_ini_file($filename);
+        config()->put('env', array_combine(array_map('strtolower', array_keys($env)), array_values($env)));
 
         return $this;
     }
@@ -87,6 +90,18 @@ final class Quill extends Router
             }
             return $this;
         }
+
+        return $this;
+    }
+
+    public function getErrorHandler(): ErrorHandlerInterface
+    {
+        return $this->errorHandler;
+    }
+
+    public function setErrorHandler(ErrorHandlerInterface $errorHandler): self
+    {
+        $this->errorHandler = $errorHandler;
 
         return $this;
     }

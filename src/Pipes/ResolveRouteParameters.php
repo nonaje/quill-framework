@@ -1,6 +1,8 @@
 <?php
 
-namespace Quill\Support\Pipes;
+declare(strict_types=1);
+
+namespace Quill\Pipes;
 
 use Closure;
 use Quill\Contracts\Request\RequestInterface;
@@ -11,7 +13,7 @@ use Quill\Router\Route;
 
 final class ResolveRouteParameters
 {
-    public function __invoke(RequestInterface $request, ResponseInterface $response, RouteStoreInterface $store, Closure $next): ResponseInterface
+    public function __invoke(RequestInterface $request, Closure $next): ResponseInterface
     {
         $route = $request->getMatchedRoute();
 
@@ -23,7 +25,7 @@ final class ResolveRouteParameters
             middlewares: $route->getMiddlewares()
         ));
 
-        return $next($request, $response, $store);
+        return $next($request);
     }
 
     private function resolveRouteParams(RouteInterface $route, RequestInterface $request): array

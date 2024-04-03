@@ -9,6 +9,6 @@ use Quill\Contracts\Response\ResponseInterface;
 
 interface MiddlewareInterface
 {
-    // TODO: Psr7 Implementation
-    public function handle(RequestInterface $request, ResponseInterface $response, \Closure $next): void;
+    // TODO: Psr-15 Implementation
+    public function handle(RequestInterface $request, \Closure $next): void;
 }

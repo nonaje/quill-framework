@@ -2,36 +2,43 @@
 
 declare(strict_types=1);
 
-namespace Quill\Support\Pipes;
+namespace Quill\Pipes;
 
 use Closure;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
-use Quill\Response\Response;
+use Quill\Exceptions\Http\RouteNotFound;
 
-final class IdentifySearchedRoute
+final readonly class IdentifySearchedRoute
 {
-    public function __invoke(RequestInterface $request, ResponseInterface $response, RouteStoreInterface $store, Closure $next): ResponseInterface
+    public function __construct(private RouteStoreInterface $store)
+    {
+    }
+
+    /**
+     * @throws RouteNotFound
+     */
+    public function __invoke(RequestInterface $request, Closure $next): ResponseInterface
     {
         $route = $this->foundRouteOrKill(
-            $this->resolveRoutes($store),
+            $this->resolveRoutes(),
             $request
         );
 
         if ($route === null) {
-            $response->sendRouteNotFound();
+            throw new RouteNotFound;
         }
 
-        return $next($request, $response, $store);
+        return $next($request,);
     }
 
-    private function resolveRoutes(RouteStoreInterface $store): array
+    private function resolveRoutes(): array
     {
-        $routes = $store->routes();
+        $routes = $this->store->routes();
 
-        foreach ($store->groups() as $group) {
+        foreach ($this->store->groups() as $group) {
             $groupRoutes = $group->routes();
 
             $routes = array_merge($routes, $groupRoutes);

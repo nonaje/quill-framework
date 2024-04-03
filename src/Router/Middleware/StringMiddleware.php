@@ -33,13 +33,13 @@ final class StringMiddleware implements MiddlewareInterface
         }
     }
 
-    public function handle(RequestInterface $request, ResponseInterface $response, \Closure $next): void
+    public function handle(RequestInterface $request, \Closure $next): void
     {
         $class = config("app.middlewares.{$this->middleware}");
 
         /** @var MiddlewareInterface $middleware */
         $middleware = new $class;
 
-        $middleware->handle($request, $response, $next);
+        $middleware->handle($request, $next);
     }
 }

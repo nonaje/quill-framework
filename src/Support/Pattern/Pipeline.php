@@ -23,7 +23,7 @@ final class Pipeline implements PipelineInterface
         return $this;
     }
 
-    public function via(array $pipes): PipelineInterface
+    public function using(array $pipes): PipelineInterface
     {
         $this->pipes = $pipes;
 
