@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Quill\Handler;
 
 use Psr\Http\Server\MiddlewareInterface;
