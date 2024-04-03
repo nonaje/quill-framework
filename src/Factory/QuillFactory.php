@@ -21,7 +21,7 @@ final class QuillFactory
         $errorHandler = new class implements ErrorHandlerInterface {
             public function capture(Throwable $e): ResponseInterface
             {
-                dd($e);
+                dd(__METHOD__, $e);
             }
         };
 
