@@ -34,19 +34,6 @@ final readonly class IdentifySearchedRoute
         return $next($request,);
     }
 
-    private function resolveRoutes(): array
-    {
-        $routes = $this->store->routes();
-
-        foreach ($this->store->groups() as $group) {
-            $groupRoutes = $group->routes();
-
-            $routes = array_merge($routes, $groupRoutes);
-        }
-
-        return $routes;
-    }
-
     private function foundRouteOrKill(array $routes, RequestInterface $request): null|RouteInterface
     {
         foreach ($routes as $route) {
@@ -92,5 +79,18 @@ final readonly class IdentifySearchedRoute
         }
 
         return false;
+    }
+
+    private function resolveRoutes(): array
+    {
+        $routes = $this->store->routes();
+
+        foreach ($this->store->groups() as $group) {
+            $groupRoutes = $group->routes();
+
+            $routes = array_merge($routes, $groupRoutes);
+        }
+
+        return $routes;
     }
 }

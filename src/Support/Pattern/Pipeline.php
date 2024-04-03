@@ -44,31 +44,10 @@ final class Pipeline implements PipelineInterface
         $start = array_reduce(
             array: array_reverse($this->pipes),
             callback: $this->resolve(),
-            initial: fn ($toSend) => $toSend
+            initial: fn($toSend) => $toSend
         );
 
         return $start($this->toSend);
-    }
-
-    private function resolve(): Closure
-    {
-        return function ($previous, $current) {
-            return function (...$toSend) use ($previous, $current) {
-                $parameters = func_get_args();
-                $parameters[] = $previous;
-                $parameters = array_flatten($parameters);
-
-                if (is_object($current)) {
-                    return $current->{$this->method}(...$parameters);
-                }
-
-                if (is_callable($current)) {
-                    return $current(...$parameters);
-                }
-
-                return (new $current)->{$this->method}(...$parameters);
-            };
-        };
     }
 
     private function assert(): void
@@ -107,5 +86,26 @@ final class Pipeline implements PipelineInterface
                 throw new LogicException('Pipelines must be a valid class');
             }
         }
+    }
+
+    private function resolve(): Closure
+    {
+        return function ($previous, $current) {
+            return function (...$toSend) use ($previous, $current) {
+                $parameters = func_get_args();
+                $parameters[] = $previous;
+                $parameters = array_flatten($parameters);
+
+                if (is_object($current)) {
+                    return $current->{$this->method}(...$parameters);
+                }
+
+                if (is_callable($current)) {
+                    return $current(...$parameters);
+                }
+
+                return (new $current)->{$this->method}(...$parameters);
+            };
+        };
     }
 }

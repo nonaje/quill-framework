@@ -19,8 +19,8 @@ readonly class RouteGroup implements RouteGroupInterface
     }
 
     public static function make(
-        string $prefix,
-        Closure $routes,
+        string                   $prefix,
+        Closure                  $routes,
         MiddlewareStoreInterface $middlewares = new MiddlewareStore
     ): RouteGroupInterface
     {

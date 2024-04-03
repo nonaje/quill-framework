@@ -8,6 +8,7 @@ use Closure;
 use Quill\Contracts\Handler\ErrorHandlerInterface;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Response\ResponseInterface;
+use Throwable;
 
 final readonly class HandlePossibleFutureError
 {
@@ -19,7 +20,7 @@ final readonly class HandlePossibleFutureError
     {
         try {
             return $next($request);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->handler->capture($e);
         }
     }

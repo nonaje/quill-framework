@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Quill\Router\Middleware;
 
+use Closure;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Factory\MiddlewareFactory;
@@ -22,7 +23,7 @@ final class ArrayMiddleware implements MiddlewareInterface
         );
     }
 
-    public function handle(RequestInterface $request, \Closure $next): void
+    public function handle(RequestInterface $request, Closure $next): void
     {
         (new Pipeline())
             ->send($request)

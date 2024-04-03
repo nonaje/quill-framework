@@ -5,19 +5,23 @@ declare(strict_types=1);
 namespace Quill\Factory;
 
 use Quill\Config\Config;
+use Quill\Contracts\Handler\ErrorHandlerInterface;
+use Quill\Contracts\Response\ResponseInterface;
 use Quill\Quill;
+use Quill\Response\Response;
 use Quill\Router\MiddlewareStore;
 use Quill\Router\RouteStore;
 use Quill\Support\Dot\Parser;
+use Throwable;
 
 final class QuillFactory
 {
     public static function make(): Quill
     {
-        $errorHandler = new class implements \Quill\Contracts\Handler\ErrorHandlerInterface {
-            public function capture(\Throwable $e): \Quill\Contracts\Response\ResponseInterface
+        $errorHandler = new class implements ErrorHandlerInterface {
+            public function capture(Throwable $e): ResponseInterface
             {
-                \Quill\Response\Response::make()->send([
+                Response::make()->send([
                     'success' => false,
                     'code' => $e->getCode(),
                     'message' => $e->getMessage(),

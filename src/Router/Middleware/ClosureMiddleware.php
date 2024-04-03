@@ -14,7 +14,7 @@ final readonly class ClosureMiddleware implements MiddlewareInterface
     {
     }
 
-    public function handle(RequestInterface $request, \Closure $next): void
+    public function handle(RequestInterface $request, Closure $next): void
     {
         call_user_func($this->middleware, $request, $next);
     }

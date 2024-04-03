@@ -49,12 +49,16 @@ final class Quill extends Router
         return $response;
     }
 
+    public function getErrorHandler(): ErrorHandlerInterface
+    {
+        return $this->errorHandler;
+    }
 
     public function loadDotEnv(string $filename = null): self
     {
         $filename ??= Path::applicationFile('.env');
 
-        if (! file_exists($filename)) {
+        if (!file_exists($filename)) {
             throw new InvalidArgumentException();
         }
 
@@ -92,11 +96,6 @@ final class Quill extends Router
         }
 
         return $this;
-    }
-
-    public function getErrorHandler(): ErrorHandlerInterface
-    {
-        return $this->errorHandler;
     }
 
     public function setErrorHandler(ErrorHandlerInterface $errorHandler): self

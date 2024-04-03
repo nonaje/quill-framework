@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Quill\Router\Middleware;
 
+use Closure;
 use LogicException;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Router\MiddlewareInterface;
@@ -29,7 +30,7 @@ final class StringClassMiddleware implements MiddlewareInterface
         }
     }
 
-    public function handle(RequestInterface $request, \Closure $next): void
+    public function handle(RequestInterface $request, Closure $next): void
     {
         /** @var MiddlewareInterface $middleware */
         $middleware = new $this->middleware;
