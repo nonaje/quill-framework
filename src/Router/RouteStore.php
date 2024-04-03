@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Quill\Router;
 
-use Closure;
 use Quill\Contracts\Router\RouteGroupInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouteStoreInterface;

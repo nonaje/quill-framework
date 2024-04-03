@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Quill\Support\Pattern;
 
+use Closure;
 use LogicException;
 use Quill\Contracts\Pipeline\PipelineInterface;
-use Closure;
 
 final class Pipeline implements PipelineInterface
 {

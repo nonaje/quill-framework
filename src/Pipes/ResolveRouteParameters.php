@@ -8,7 +8,6 @@ use Closure;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Router\RouteInterface;
-use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Router\Route;
 
 final class ResolveRouteParameters

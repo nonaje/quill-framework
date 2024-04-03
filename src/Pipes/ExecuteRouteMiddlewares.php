@@ -7,7 +7,6 @@ namespace Quill\Pipes;
 use Closure;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Response\ResponseInterface;
-use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Support\Pattern\Pipeline;
 
 final class ExecuteRouteMiddlewares

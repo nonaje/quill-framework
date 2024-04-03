@@ -6,10 +6,7 @@ namespace Quill\Router\Middleware;
 
 use LogicException;
 use Quill\Contracts\Request\RequestInterface;
-use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Router\MiddlewareInterface;
-use Quill\Request\Request;
-use Quill\Response\Response;
 
 final class StringClassMiddleware implements MiddlewareInterface
 {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Quill\Router\Middleware;
 
 use Quill\Contracts\Request\RequestInterface;
-use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Factory\MiddlewareFactory;
 use Quill\Support\Pattern\Pipeline;
