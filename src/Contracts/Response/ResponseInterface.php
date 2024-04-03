@@ -11,9 +11,7 @@ interface ResponseInterface
 {
     public function getPsrResponse(): PsrResponseInterface;
 
-    public function setPsrResponse(PsrResponseInterface $response): self;
+    public function code(HttpCode $code): ResponseInterface;
 
-    public function code(HttpCode $code): self;
-
-    public function json(array $data): self;
+    public function json(array $data): ResponseInterface;
 }

@@ -6,7 +6,7 @@ namespace Quill\Router;
 
 use Closure;
 use LogicException;
-use Quill\Contracts\Router\MiddlewareInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Enum\Http\HttpMethod;
@@ -32,6 +32,7 @@ final readonly class Route implements RouteInterface
     ): self
     {
         $uri = str_starts_with($uri, '/') ? $uri : '/' . $uri;
+        $uri = ! str_ends_with($uri, '/') ? $uri : substr($uri, 0, -1);
 
         $route = new self(
             uri: $uri,

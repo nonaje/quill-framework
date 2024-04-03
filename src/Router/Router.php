@@ -6,7 +6,7 @@ namespace Quill\Router;
 
 use Closure;
 use LogicException;
-use Quill\Contracts\Router\MiddlewareInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteGroupInterface;
 use Quill\Contracts\Router\RouteInterface;

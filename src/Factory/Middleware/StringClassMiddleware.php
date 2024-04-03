@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Quill\Factory\Middleware;
 
-use Closure;
 use LogicException;
-use Quill\Contracts\Request\RequestInterface;
-use Quill\Contracts\Router\MiddlewareInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
-final class StringClassMiddleware implements MiddlewareInterface
+final readonly class StringClassMiddleware implements MiddlewareInterface
 {
-    public function __construct(private readonly string $middleware)
+    public function __construct(private string $middleware)
     {
         $this->assert();
     }
@@ -30,11 +31,11 @@ final class StringClassMiddleware implements MiddlewareInterface
         }
     }
 
-    public function handle(RequestInterface $request, Closure $next): void
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         /** @var MiddlewareInterface $middleware */
         $middleware = new $this->middleware;
 
-        $middleware->handle($request, $next);
+        return $middleware->process($request, $handler);
     }
 }

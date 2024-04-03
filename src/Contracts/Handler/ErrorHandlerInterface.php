@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Quill\Contracts\Handler;
 
-use Quill\Contracts\Response\ResponseInterface;
+use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
 interface ErrorHandlerInterface

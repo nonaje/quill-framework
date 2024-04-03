@@ -6,9 +6,9 @@ namespace Quill\Factory;
 
 use Quill\Config\Config;
 use Quill\Contracts\Handler\ErrorHandlerInterface;
-use Quill\Contracts\Response\ResponseInterface;
+use Psr\Http\Message\ResponseInterface;
+use Quill\Handler\RequestHandlerChain;
 use Quill\Quill;
-use Quill\Response\Response;
 use Quill\Router\MiddlewareStore;
 use Quill\Router\RouteStore;
 use Quill\Support\Dot\Parser;
@@ -27,9 +27,10 @@ final class QuillFactory
 
         return new Quill(
             config: Config::make(new Parser),
+            chain: new RequestHandlerChain,
             errorHandler: $errorHandler,
             store: new RouteStore,
-            middlewares: new MiddlewareStore
+            routerMiddlewares: new MiddlewareStore
         );
     }
 }

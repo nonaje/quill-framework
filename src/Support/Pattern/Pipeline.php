@@ -37,14 +37,14 @@ final class Pipeline implements PipelineInterface
         return $this;
     }
 
-    public function exec(): mixed
+    public function exec(Closure $initial = null): mixed
     {
         $this->assert();
 
         $start = array_reduce(
             array: array_reverse($this->pipes),
             callback: $this->resolve(),
-            initial: fn($toSend) => $toSend
+            initial: $initial ?? fn($toSend) => $toSend
         );
 
         return $start($this->toSend);

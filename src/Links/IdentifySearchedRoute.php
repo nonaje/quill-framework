@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Quill\Pipes;
+namespace Quill\Links;
 
-use Closure;
-use Quill\Contracts\Request\RequestInterface;
-use Quill\Contracts\Response\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Exceptions\Http\RouteNotFound;
+use Psr\Http\Message\ResponseInterface;
 
-final readonly class IdentifySearchedRoute
+final readonly class IdentifySearchedRoute implements MiddlewareInterface
 {
     public function __construct(private RouteStoreInterface $store)
     {
@@ -20,7 +21,7 @@ final readonly class IdentifySearchedRoute
     /**
      * @throws RouteNotFound
      */
-    public function __invoke(RequestInterface $request, Closure $next): ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $route = $this->foundRouteOrKill(
             $this->resolveRoutes(),
@@ -31,15 +32,15 @@ final readonly class IdentifySearchedRoute
             throw new RouteNotFound;
         }
 
-        return $next($request,);
+        $request = $request->withAttribute('route', $route);
+
+        return $handler->handle($request);
     }
 
-    private function foundRouteOrKill(array $routes, RequestInterface $request): null|RouteInterface
+    private function foundRouteOrKill(array $routes, ServerRequestInterface $request): null|RouteInterface
     {
         foreach ($routes as $route) {
             if (!$this->matchRequestedUri($route, $request)) continue;
-
-            $request->setMatchedRoute($route);
 
             return $route;
         }
@@ -47,14 +48,14 @@ final readonly class IdentifySearchedRoute
         return null;
     }
 
-    private function matchRequestedUri(RouteInterface $route, RequestInterface $request): bool
+    private function matchRequestedUri(RouteInterface $route, ServerRequestInterface $request): bool
     {
-        if ($route->method()->value !== $request->method()) {
+        if ($route->method()->value !== strtoupper($request->getMethod())) {
             return false;
         }
 
         $routeParts = array_values(array_filter(explode('/', $route->uri())));
-        $searchedRouteParts = array_values(array_filter(explode('/', $request->uri())));
+        $searchedRouteParts = array_values(array_filter(explode('/', $request->getUri()->getPath())));
 
         if (count($routeParts) !== count($searchedRouteParts)) {
             return false;

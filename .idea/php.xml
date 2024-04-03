@@ -72,6 +72,7 @@
       <path value="$PROJECT_DIR$/vendor/nyholm/psr7" />
       <path value="$PROJECT_DIR$/vendor/psr/http-factory" />
       <path value="$PROJECT_DIR$/vendor/nyholm/psr7-server" />
+      <path value="$PROJECT_DIR$/vendor/psr/http-server-middleware" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.3">

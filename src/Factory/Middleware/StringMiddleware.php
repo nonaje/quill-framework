@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Quill\Factory\Middleware;
 
-use Closure;
 use LogicException;
-use Quill\Contracts\Request\RequestInterface;
-use Quill\Contracts\Router\MiddlewareInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 final readonly class StringMiddleware implements MiddlewareInterface
 {
@@ -31,13 +32,13 @@ final readonly class StringMiddleware implements MiddlewareInterface
         }
     }
 
-    public function handle(RequestInterface $request, Closure $next): void
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $class = config("app.middlewares.{$this->middleware}");
 
         /** @var MiddlewareInterface $middleware */
         $middleware = new $class;
 
-        $middleware->handle($request, $next);
+        return $middleware->process($request, $handler);
     }
 }

@@ -6,18 +6,18 @@ namespace Quill\Request;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Quill\Contracts\Request\RequestInterface;
+use Quill\Contracts\Router\RouteInterface;
 use Quill\Router\Route;
 use Quill\Support\Pattern\Singleton;
 
-class Request extends Singleton implements RequestInterface
+class Request implements RequestInterface
 {
     private null|Route $route = null;
 
-    protected function __construct(
+    public function __construct(
         private readonly ServerRequestInterface $psrRequest
     )
     {
-        parent::__construct();
     }
 
     public function psrRequest(): ServerRequestInterface
@@ -35,14 +35,14 @@ class Request extends Singleton implements RequestInterface
         return $this->route->params()[$key] ?? $default;
     }
 
-    public function setMatchedRoute(Route $route): self
+    public function setMatchedRoute(RouteInterface $route): self
     {
         $this->route = $route;
 
         return $this;
     }
 
-    public function getMatchedRoute(): null|Route
+    public function getMatchedRoute(): null|RouteInterface
     {
         return $this->route;
     }

@@ -10,27 +10,18 @@ use Quill\Enum\Http\HttpCode;
 use Quill\Enum\Http\HttpHeader;
 use Quill\Enum\Http\MimeType;
 use Quill\Factory\Psr7\Psr7Factory;
-use Quill\Support\Pattern\Singleton;
 
-class Response extends Singleton implements ResponseInterface
+class Response implements ResponseInterface
 {
-    protected function __construct(
+    public function __construct(
         private PsrResponseInterface $psrResponse
     )
     {
-        parent::__construct();
     }
 
     public function getPsrResponse(): PsrResponseInterface
     {
         return $this->psrResponse;
-    }
-
-    public function setPsrResponse(PsrResponseInterface $response): self
-    {
-        $this->psrResponse = $response;
-
-        return $this;
     }
 
     public function json(array $data): self
@@ -51,5 +42,12 @@ class Response extends Singleton implements ResponseInterface
         $response = $this->psrResponse->withStatus($code->value);
 
         return $this->setPsrResponse($response);
+    }
+
+    private function setPsrResponse(PsrResponseInterface $response): self
+    {
+        $this->psrResponse = $response;
+
+        return $this;
     }
 }

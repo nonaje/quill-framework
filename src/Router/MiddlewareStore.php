@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Quill\Router;
 
 use Closure;
-use Quill\Contracts\Router\MiddlewareInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Factory\Middleware\MiddlewareFactory;
 
@@ -16,7 +16,7 @@ final class MiddlewareStore implements MiddlewareStoreInterface
 
     public function add(string|array|Closure|MiddlewareInterface $middleware): self
     {
-        $middlewares = is_array($middleware) ? $middleware : [$middleware];
+        $middlewares = is_array($middleware) ? array_flatten($middleware) : [$middleware];
 
         foreach ($middlewares as $key => $middleware) {
             if ($middleware instanceof MiddlewareInterface) {

@@ -6,7 +6,8 @@ namespace Quill\Factory\Middleware;
 
 use Closure;
 use InvalidArgumentException;
-use Quill\Contracts\Router\MiddlewareInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 final class MiddlewareFactory
 {
@@ -14,8 +15,11 @@ final class MiddlewareFactory
     {
         return match (true) {
             is_callable($middleware) => self::createMiddlewareFromClosure($middleware),
+
             class_exists($middleware) => self::createMiddlewareFromStringClass($middleware),
+
             is_string($middleware) => self::createMiddlewareFromString($middleware),
+
             default => throw new InvalidArgumentException('Please provide a valid middleware type for creation'),
         };
     }

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Quill\Factory\Psr7;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
@@ -72,5 +74,15 @@ class Psr7Factory
     public static function responseFactory(): ResponseFactoryInterface
     {
         return self::$responseFactory ?? new Psr17Factory;
+    }
+
+    public static function createPsr7ServerRequest(): ServerRequestInterface
+    {
+        return (new ServerRequestCreator(
+            serverRequestFactory: self::serverRequestFactory(),
+            uriFactory: self::uriFactory(),
+            uploadedFileFactory: self::uploadedFileFactory(),
+            streamFactory: self::streamFactory()
+        ))->fromGlobals();
     }
 }

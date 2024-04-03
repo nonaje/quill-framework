@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Quill\Controller;
 
-use Quill\Request\Request;
-use Quill\Response\Response;
+use Quill\Contracts\Request\RequestInterface;
+use Quill\Contracts\Response\ResponseInterface;
 
 abstract class Controller
 {
     public function __construct(
-        protected readonly Request  $request,
-        protected readonly Response $response
+        protected readonly RequestInterface  $request,
+        protected readonly ResponseInterface $response
     )
     {
     }

@@ -2,21 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Quill\Pipes;
+namespace Quill\Links;
 
-use Closure;
-use Quill\Contracts\Request\RequestInterface;
-use Quill\Contracts\Response\ResponseInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Router\Route;
 
-final class ResolveRouteParameters
+final class ResolveRouteParameters implements MiddlewareInterface
 {
-    public function __invoke(RequestInterface $request, Closure $next): ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $route = $request->getMatchedRoute();
+        $route = $request->getAttribute('route');
 
-        $request->setMatchedRoute(Route::make(
+        $request = $request->withAttribute('route', Route::make(
             uri: $route->uri(),
             method: $route->method()->value,
             target: $route->target(),
@@ -24,15 +25,15 @@ final class ResolveRouteParameters
             middlewares: $route->getMiddlewares()
         ));
 
-        return $next($request);
+        return $handler->handle($request);
     }
 
-    private function resolveRouteParams(RouteInterface $route, RequestInterface $request): array
+    private function resolveRouteParams(RouteInterface $route, ServerRequestInterface $request): array
     {
         $params = [];
 
         $routeParts = array_values(array_filter(explode('/', $route->uri())));
-        $searchedRouteParts = array_values(array_filter(explode('/', $request->uri())));
+        $searchedRouteParts = array_values(array_filter(explode('/', $request->getUri()->getPath())));
 
         // Search for every part of the route that starts with ':'
         // and collects each part of the requested URI at that position
