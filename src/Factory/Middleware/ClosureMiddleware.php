@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quill\Router\Middleware;
+namespace Quill\Factory\Middleware;
 
 use Closure;
 use Quill\Contracts\Request\RequestInterface;

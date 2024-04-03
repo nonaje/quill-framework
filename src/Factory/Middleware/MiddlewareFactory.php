@@ -2,14 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Quill\Factory;
+namespace Quill\Factory\Middleware;
 
 use Closure;
 use InvalidArgumentException;
 use Quill\Contracts\Router\MiddlewareInterface;
-use Quill\Router\Middleware\ClosureMiddleware;
-use Quill\Router\Middleware\StringClassMiddleware;
-use Quill\Router\Middleware\StringMiddleware;
 
 final class MiddlewareFactory
 {

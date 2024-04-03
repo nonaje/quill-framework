@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Quill\Router\Middleware;
+namespace Quill\Factory\Middleware;
 
 use Closure;
 use LogicException;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Router\MiddlewareInterface;
 
-final class StringMiddleware implements MiddlewareInterface
+final readonly class StringMiddleware implements MiddlewareInterface
 {
-    public function __construct(private readonly string $middleware)
+    public function __construct(private string $middleware)
     {
         $this->assert();
     }

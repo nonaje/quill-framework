@@ -7,7 +7,7 @@ namespace Quill\Router;
 use Closure;
 use Quill\Contracts\Router\MiddlewareInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
-use Quill\Factory\MiddlewareFactory;
+use Quill\Factory\Middleware\MiddlewareFactory;
 
 final class MiddlewareStore implements MiddlewareStoreInterface
 {
