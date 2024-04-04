@@ -12,30 +12,30 @@ use Quill\Factory\Middleware\RequestHandlerFactory;
 
 class RequestHandlerChain implements RequestHandlerChainInterface
 {
-    private null|RequestHandlerInterface $link = null;
+    private null|RequestHandlerInterface $lastLink = null;
 
     public function enchain(MiddlewareInterface $middleware): RequestHandlerChainInterface
     {
-        if ($this->link === null) {
+        if ($this->lastLink === null) {
             throw new LogicException('Must specify the first link in the chain before creating a new one.');
         }
 
-        $this->setLink(
-            RequestHandlerFactory::createRequestHandler($middleware, $this->getLink())
-        );
+        $handler = RequestHandlerFactory::createRequestHandler($middleware, $this->getLastLink());
+
+        $this->setLastLink($handler);
 
         return $this;
     }
 
-    public function setLink(RequestHandlerInterface $handler): RequestHandlerChainInterface
+    public function setLastLink(RequestHandlerInterface $handler): RequestHandlerChainInterface
     {
-        $this->link = $handler;
+        $this->lastLink = $handler;
 
         return $this;
     }
 
-    public function getLink(): RequestHandlerInterface
+    public function getLastLink(): RequestHandlerInterface
     {
-        return $this->link;
+        return $this->lastLink;
     }
 }

@@ -10,6 +10,8 @@ use Quill\Router\Route;
 
 interface RequestInterface
 {
+    public function route(string $key, mixed $default = null): mixed;
+
     public function psrRequest(): ServerRequestInterface;
 
     public function setMatchedRoute(RouteInterface $route): self;

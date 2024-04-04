@@ -7,7 +7,6 @@ namespace Quill\Factory\Middleware;
 use Closure;
 use InvalidArgumentException;
 use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 final class MiddlewareFactory
 {

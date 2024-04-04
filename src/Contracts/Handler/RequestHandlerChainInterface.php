@@ -11,7 +11,7 @@ interface RequestHandlerChainInterface
 {
     public function enchain(MiddlewareInterface $middleware): RequestHandlerChainInterface;
 
-    public function setLink(RequestHandlerInterface $handler): RequestHandlerChainInterface;
+    public function setLastLink(RequestHandlerInterface $handler): RequestHandlerChainInterface;
 
-    public function getLink(): RequestHandlerInterface;
+    public function getLastLink(): RequestHandlerInterface;
 }

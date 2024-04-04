@@ -19,6 +19,8 @@ interface RouterInterface
 {
     public function map(string $method, string $uri, Closure|array $target): RouteInterface;
 
+    public function loadRoutesFrom(string $filename): self;
+
     public function group(string $prefix, Closure $routes): RouteGroupInterface;
 
     public function middleware(string|array|Closure|MiddlewareInterface $middleware): RouterInterface;

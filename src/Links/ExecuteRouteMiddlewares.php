@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Quill\Links;
 
-use Closure;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Quill\Factory\Middleware\RequestHandlerFactory;
-use Quill\Support\Pattern\Pipeline;
-use function PHPUnit\Framework\containsIdentical;
 
 final class ExecuteRouteMiddlewares implements MiddlewareInterface
 {

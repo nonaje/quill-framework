@@ -21,13 +21,15 @@ final class QuillFactory
         $errorHandler = new class implements ErrorHandlerInterface {
             public function capture(Throwable $e): ResponseInterface
             {
-                dd(__METHOD__, $e);
+                dump('ERROR');
+                dd($e->getMessage());
             }
         };
 
         return new Quill(
             config: Config::make(new Parser),
             chain: new RequestHandlerChain,
+            uses: new MiddlewareStore,
             errorHandler: $errorHandler,
             store: new RouteStore,
             routerMiddlewares: new MiddlewareStore

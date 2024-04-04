@@ -16,20 +16,22 @@ use Quill\Contracts\Handler\RequestHandlerChainInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Factory\Middleware\MiddlewareFactory;
+use Quill\Factory\Psr7\Psr7Factory;
+use Quill\Factory\QuillResponseFactory;
 use Quill\Links\ExecuteRouteMiddlewares;
 use Quill\Links\ExecuteRouteTarget;
 use Quill\Links\HandlePossibleFutureError;
 use Quill\Links\IdentifySearchedRoute;
 use Quill\Links\ResolveRouteParameters;
+use Quill\Response\ResponseMessenger;
 use Quill\Router\Router;
 
 final class Quill extends Router
 {
-    private array $configurationFiles;
-
     public function __construct(
         public readonly ConfigurationInterface          $config,
         private readonly RequestHandlerChainInterface   $chain,
+        private readonly MiddlewareStoreInterface       $uses,
         private ErrorHandlerInterface                   $errorHandler,
         RouteStoreInterface                             $store,
         MiddlewareStoreInterface                        $routerMiddlewares
@@ -37,37 +39,51 @@ final class Quill extends Router
     {
         parent::__construct($store, $routerMiddlewares);
 
-        // Last to run
-        $this->chain->setLink(new ExecuteRouteTarget);
-    }
+        // First element of the middleware chain but last to run (LIFO)
+        $this->chain->setLastLink(new ExecuteRouteTarget);
 
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        // Array reverse because the chain is LIFO
-        // Position 0 of the array will be the first to be executed after being reverted.
-        $this->using(array_reverse([
+        // Prepare middleware stack
+        $this->uses->add([
             new HandlePossibleFutureError($this->getErrorHandler()),
             new IdentifySearchedRoute($this->store),
             new ResolveRouteParameters,
-            new ExecuteRouteMiddlewares
-        ]));
+        ]);
+    }
 
-        return $this->chain->getLink()->handle($request);
+    public function up(): void
+    {
+        $request = Psr7Factory::createPsr7ServerRequest();
+
+        $this->oilChain();
+
+        $response = $this->unchain($request);
+
+        $response = QuillResponseFactory::createFromPsrResponse($response);
+
+        (new ResponseMessenger)->send($response);
+    }
+
+    private function oilChain(): void
+    {
+        $chain = $this->uses->all();
+        $chain[] = new ExecuteRouteMiddlewares;
+        $chain = array_reverse($chain);
+
+        foreach ($chain as $link) {
+            $this->chain->enchain($link);
+        }
+    }
+
+    private function unchain(ServerRequestInterface $request): ResponseInterface
+    {
+        $handler = $this->chain->getLastLink();
+
+        return $handler->handle($request);
     }
 
     public function using(string|array|Closure|MiddlewareInterface $middleware): self
     {
-        $middlewares = is_array($middleware) ? array_flatten($middleware) : [$middleware];
-
-        foreach ($middlewares as $m) {
-            if ($m instanceof MiddlewareInterface) {
-                $instance = $m;
-            } else {
-                $instance = MiddlewareFactory::createMiddleware($m);
-            }
-
-            $this->chain->enchain($instance);
-        }
+        $this->uses->add([$middleware]);
 
         return $this;
     }

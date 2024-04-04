@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Quill\Router;
 
 use Closure;
+use InvalidArgumentException;
 use LogicException;
 use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
@@ -31,6 +32,21 @@ class Router implements RouterInterface
         }
 
         throw new LogicException("Undefined method " . self::class . "@$method");
+    }
+
+    public function loadRoutesFrom(string $filename): self
+    {
+        if (! file_exists($filename)) {
+            throw new InvalidArgumentException("File: $filename does not exists");
+        }
+
+        $routes = require_once $filename;
+
+        if (is_callable($routes)) {
+            $routes($this);
+        }
+
+        return $this;
     }
 
     public function map(string $method, string $uri, Closure|array $target): RouteInterface

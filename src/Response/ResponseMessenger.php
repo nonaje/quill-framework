@@ -13,8 +13,7 @@ final class ResponseMessenger implements ResponseMessengerInterface
     {
         $this->sendHeaders($response);
         $this->sendStatusCode($response);
-
-        echo $response->getPsrResponse()->getBody()->getContents();
+        $this->sendBody($response);
     }
 
     private function sendHeaders(ResponseInterface $response): void
@@ -40,5 +39,10 @@ final class ResponseMessenger implements ResponseMessengerInterface
     private function sendStatusCode(ResponseInterface $response): void
     {
         http_response_code($response->getPsrResponse()->getStatusCode());
+    }
+
+    private function sendBody(ResponseInterface $response): void
+    {
+        echo $response->getPsrResponse()->getBody()->getContents();
     }
 }

@@ -16,7 +16,7 @@ final class MiddlewareStore implements MiddlewareStoreInterface
 
     public function add(string|array|Closure|MiddlewareInterface $middleware): self
     {
-        $middlewares = is_array($middleware) ? array_flatten($middleware) : [$middleware];
+        $middlewares = array_flatten([$middleware]);
 
         foreach ($middlewares as $key => $middleware) {
             if ($middleware instanceof MiddlewareInterface) {
