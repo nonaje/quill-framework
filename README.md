@@ -1,5 +1,8 @@
 ## Disclaimer
-**This is a development version of the Framework, use at your own risk**
+
+**This documentation is in progress, its updated every day.**
+
+**This is a development version of the Framework, use at your own risk.**
 
 ## Quill
 A simple way to make lightweight PHP APIs
