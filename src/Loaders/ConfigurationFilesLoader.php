@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Quill\Config;
+namespace Quill\Loaders;
 
 use InvalidArgumentException;
 use Quill\Contracts\Configuration\ConfigurationInterface;
+use Quill\Contracts\Loader\FilesLoader;
 use Quill\Support\Helpers\Path;
 
-final readonly class ConfigurationFilesLoader
+final readonly class ConfigurationFilesLoader implements FilesLoader
 {
     public function __construct(
         private ConfigurationInterface $config,
-        private array $files
     )
     {
     }
 
-    public function __invoke(): void
+    public function loadFiles(array $filenames): void
     {
-        foreach ($this->files as $filename) {
+        foreach ($filenames as $filename) {
             $this->loadConfig($filename);
         }
     }

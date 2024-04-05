@@ -8,14 +8,12 @@ use Closure;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
-use Quill\Config\ConfigurationFilesLoader;
-use Quill\Config\DotEnvLoader;
 use Quill\Contracts\Configuration\ConfigurationInterface;
 use Quill\Contracts\Handler\ErrorHandlerInterface;
 use Quill\Contracts\Handler\RequestHandlerChainInterface;
+use Quill\Contracts\Loader\FilesLoader;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
-use Quill\Factory\Middleware\MiddlewareFactory;
 use Quill\Factory\Psr7\Psr7Factory;
 use Quill\Factory\QuillResponseFactory;
 use Quill\Links\ExecuteRouteMiddlewares;
@@ -30,14 +28,17 @@ final class Quill extends Router
 {
     public function __construct(
         public readonly ConfigurationInterface          $config,
+        private readonly FilesLoader                    $configurationFilesLoader,
+        private readonly FilesLoader                    $dotEnvLoader,
         private readonly RequestHandlerChainInterface   $chain,
         private readonly MiddlewareStoreInterface       $uses,
         private ErrorHandlerInterface                   $errorHandler,
         RouteStoreInterface                             $store,
-        MiddlewareStoreInterface                        $routerMiddlewares
+        MiddlewareStoreInterface                        $routerMiddlewares,
+        FilesLoader                                     $routeFilesLoader,
     )
     {
-        parent::__construct($store, $routerMiddlewares);
+        parent::__construct($routeFilesLoader, $store, $routerMiddlewares);
 
         // First element of the middleware chain but last to run (LIFO)
         $this->chain->setLastLink(new ExecuteRouteTarget);
@@ -100,18 +101,16 @@ final class Quill extends Router
         return $this;
     }
 
-    public function loadConfigurationFiles(string $filename, string ...$filenames): self
+    public function loadConfigurationFiles(string ...$filenames): self
     {
-        $loader = (new ConfigurationFilesLoader($this->config, func_get_args()));
-        $loader();
+        $this->configurationFilesLoader->loadFiles($filenames);
 
         return $this;
     }
 
     public function loadDotEnv(string $filename = ''): self
     {
-        $loader = (new DotEnvLoader($this->config, $filename));
-        $loader();
+        $this->dotEnvLoader->loadFiles([$filename]);
 
         return $this;
     }

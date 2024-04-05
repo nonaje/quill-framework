@@ -8,6 +8,9 @@ use Quill\Config\Config;
 use Quill\Contracts\Handler\ErrorHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Quill\Handler\RequestHandlerChain;
+use Quill\Loaders\ConfigurationFilesLoader;
+use Quill\Loaders\DotEnvLoader;
+use Quill\Loaders\RouteFilesLoader;
 use Quill\Quill;
 use Quill\Router\MiddlewareStore;
 use Quill\Router\RouteStore;
@@ -26,13 +29,18 @@ final class QuillFactory
             }
         };
 
+        $config = Config::make(new Parser);
+
         return new Quill(
-            config: Config::make(new Parser),
+            config: $config,
+            configurationFilesLoader: new ConfigurationFilesLoader($config),
+            dotEnvLoader: new DotEnvLoader($config),
             chain: new RequestHandlerChain,
             uses: new MiddlewareStore,
             errorHandler: $errorHandler,
             store: new RouteStore,
-            routerMiddlewares: new MiddlewareStore
+            routerMiddlewares: new MiddlewareStore,
+            routeFilesLoader: new RouteFilesLoader
         );
     }
 }

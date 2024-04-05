@@ -11,6 +11,7 @@ use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteGroupInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouterInterface;
+use Quill\Loaders\RouteFilesLoader;
 
 readonly class RouteGroup implements RouteGroupInterface
 {
@@ -27,7 +28,7 @@ readonly class RouteGroup implements RouteGroupInterface
         $prefix = str_starts_with($prefix, '/') ? $prefix : '/' . $prefix;
         $prefix = str_ends_with($prefix, '/') ? $prefix : $prefix . '/';
 
-        $router = new Router(new RouteStore, new MiddlewareStore, $prefix);
+        $router = new Router(new RouteFilesLoader, new RouteStore, new MiddlewareStore, $prefix);
 
         $group = new RouteGroup($router, $middlewares);
 

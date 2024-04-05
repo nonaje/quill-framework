@@ -8,6 +8,7 @@ use Closure;
 use InvalidArgumentException;
 use LogicException;
 use Psr\Http\Server\MiddlewareInterface;
+use Quill\Contracts\Loader\FilesLoader;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteGroupInterface;
 use Quill\Contracts\Router\RouteInterface;
@@ -18,6 +19,7 @@ use Quill\Enum\Http\HttpMethod;
 class Router implements RouterInterface
 {
     public function __construct(
+        protected readonly FilesLoader              $routeFilesLoader,
         protected readonly RouteStoreInterface      $store,
         protected readonly MiddlewareStoreInterface $middlewares,
         protected readonly string                   $prefix = ''
@@ -34,16 +36,20 @@ class Router implements RouterInterface
         throw new LogicException("Undefined method " . self::class . "@$method");
     }
 
-    public function loadRoutesFrom(string $filename): self
+    public function loadRoutesFrom(string ...$filenames): self
     {
-        if (! file_exists($filename)) {
-            throw new InvalidArgumentException("File: $filename does not exists");
-        }
+        $files = func_get_args();
 
-        $routes = require_once $filename;
+        foreach ($files as $filename) {
+            if (! file_exists($filename)) {
+                throw new InvalidArgumentException("File: $filename does not exists");
+            }
 
-        if (is_callable($routes)) {
-            $routes($this);
+            $routes = require_once $filename;
+
+            if (is_callable($routes)) {
+                $routes($this);
+            }
         }
 
         return $this;
