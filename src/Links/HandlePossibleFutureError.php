@@ -22,7 +22,7 @@ final readonly class HandlePossibleFutureError implements MiddlewareInterface
         try {
             return $handler->handle($request);
         } catch (Throwable $e) {
-            return $this->error->capture($e);
+            return $this->error->captureException($e);
         }
     }
 }
