@@ -25,8 +25,8 @@ readonly class RouteGroup implements RouteGroupInterface
         MiddlewareStoreInterface $middlewares = new MiddlewareStore
     ): RouteGroupInterface
     {
-        $prefix = str_starts_with($prefix, '/') ? $prefix : '/' . $prefix;
-        $prefix = str_ends_with($prefix, '/') ? $prefix : $prefix . '/';
+        $prefix = trim($prefix, '/');
+        $prefix = '/' ? $prefix : "/$prefix";
 
         $router = new Router(new RouteFilesLoader, new RouteStore, new MiddlewareStore, $prefix);
 

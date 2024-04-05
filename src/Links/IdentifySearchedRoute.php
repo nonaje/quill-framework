@@ -8,13 +8,14 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Router\RouteInterface;
+use Quill\Contracts\Router\RouterInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Exceptions\Http\RouteNotFound;
 use Psr\Http\Message\ResponseInterface;
 
 final readonly class IdentifySearchedRoute implements MiddlewareInterface
 {
-    public function __construct(private RouteStoreInterface $store)
+    public function __construct(private RouterInterface $router)
     {
     }
 
@@ -24,7 +25,7 @@ final readonly class IdentifySearchedRoute implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $route = $this->foundRouteOrKill(
-            $this->resolveRoutes(),
+            $this->router->routes(),
             $request
         );
 
@@ -80,18 +81,5 @@ final readonly class IdentifySearchedRoute implements MiddlewareInterface
         }
 
         return false;
-    }
-
-    private function resolveRoutes(): array
-    {
-        $routes = $this->store->routes();
-
-        foreach ($this->store->groups() as $group) {
-            $groupRoutes = $group->routes();
-
-            $routes = array_merge($routes, $groupRoutes);
-        }
-
-        return $routes;
     }
 }

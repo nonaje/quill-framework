@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Quill\Loaders;
 
-use InvalidArgumentException;
 use Quill\Contracts\Configuration\ConfigurationInterface;
 use Quill\Contracts\Loader\FilesLoader;
-use Quill\Support\Helpers\Path;
+use Quill\Exceptions\FileNotFoundException;
+use Quill\Support\PathFinder\Path;
 
 final readonly class ConfigurationFilesLoader implements FilesLoader
 {
@@ -17,6 +17,9 @@ final readonly class ConfigurationFilesLoader implements FilesLoader
     {
     }
 
+    /**
+     * @throws FileNotFoundException
+     */
     public function loadFiles(array $filenames): void
     {
         foreach ($filenames as $filename) {
@@ -24,12 +27,15 @@ final readonly class ConfigurationFilesLoader implements FilesLoader
         }
     }
 
+    /**
+     * @throws FileNotFoundException
+     */
     private function loadConfig(string $filename = null): void
     {
-        $filename ??= Path::applicationFile('config');
+        $filename ??= path()->applicationFile('config');
 
         if (!file_exists($filename)) {
-            throw new InvalidArgumentException("File: $filename does not exists");
+            throw new FileNotFoundException($filename);
         }
 
         if (is_file($filename)) {
@@ -37,6 +43,8 @@ final readonly class ConfigurationFilesLoader implements FilesLoader
                 key: substr(basename($filename), 0, -4),
                 value: require_once $filename
             );
+
+            return;
         }
 
         if (is_dir($filename)) {

@@ -9,9 +9,9 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 interface RequestHandlerChainInterface
 {
-    public function enchain(MiddlewareInterface $middleware): RequestHandlerChainInterface;
+    public function stack(MiddlewareInterface $middleware): RequestHandlerChainInterface;
 
-    public function setLastLink(RequestHandlerInterface $handler): RequestHandlerChainInterface;
+    public function setLast(RequestHandlerInterface $handler): RequestHandlerChainInterface;
 
-    public function getLastLink(): RequestHandlerInterface;
+    public function getLast(): RequestHandlerInterface;
 }

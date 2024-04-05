@@ -16,13 +16,13 @@ use Quill\Contracts\Router\RouterInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Enum\Http\HttpMethod;
 
-class Router implements RouterInterface
+readonly class Router implements RouterInterface
 {
     public function __construct(
-        protected readonly FilesLoader              $routeFilesLoader,
-        protected readonly RouteStoreInterface      $store,
-        protected readonly MiddlewareStoreInterface $middlewares,
-        protected readonly string                   $prefix = ''
+        protected FilesLoader              $routeFilesLoader,
+        protected RouteStoreInterface      $store,
+        protected MiddlewareStoreInterface $middlewares,
+        protected string                   $prefix = ''
     )
     {
     }
@@ -38,14 +38,12 @@ class Router implements RouterInterface
 
     public function loadRoutesFrom(string ...$filenames): self
     {
-        $files = func_get_args();
-
-        foreach ($files as $filename) {
+        foreach ($filenames  as $filename) {
             if (! file_exists($filename)) {
                 throw new InvalidArgumentException("File: $filename does not exists");
             }
 
-            $routes = require_once $filename;
+            $routes = require $filename;
 
             if (is_callable($routes)) {
                 $routes($this);

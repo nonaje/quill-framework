@@ -31,8 +31,8 @@ final readonly class Route implements RouteInterface
         MiddlewareStoreInterface $middlewares = new MiddlewareStore
     ): self
     {
-        $uri = str_starts_with($uri, '/') ? $uri : '/' . $uri;
-        $uri = $uri == '/' || ! str_ends_with($uri, '/') ? $uri : substr($uri, 0, -1);
+        $uri = trim($uri, '/');
+        $uri = $uri == '/' ? $uri : "/$uri";
 
         $route = new self(
             uri: $uri,
