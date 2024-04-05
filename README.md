@@ -1,6 +1,6 @@
 ## Disclaimer
 
-**This documentation is in progress, its updated every day.**
+**This documentation is in progress and is updated every day.**
 
 **This is a development version of the Framework, use at your own risk.**
 
