@@ -26,7 +26,7 @@ readonly class RouteGroup implements RouteGroupInterface
     ): RouteGroupInterface
     {
         $prefix = trim($prefix, '/');
-        $prefix = '/' ? $prefix : "/$prefix";
+        $prefix = ($prefix == '/') ? $prefix : "/$prefix/";
 
         $router = new Router(new RouteFilesLoader, new RouteStore, new MiddlewareStore, $prefix);
 

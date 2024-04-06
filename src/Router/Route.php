@@ -32,7 +32,7 @@ final readonly class Route implements RouteInterface
     ): self
     {
         $uri = trim($uri, '/');
-        $uri = $uri == '/' ? $uri : "/$uri";
+        $uri = ($uri == '/') ? $uri : "/$uri";
 
         $route = new self(
             uri: $uri,
