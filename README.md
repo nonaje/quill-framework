@@ -79,7 +79,7 @@ $router->delete('/', fn (RequestInterface $req, ResponseInterface $res): Respons
 ]));
 ```
 
-#### Recursive Groups
+### Recursive Groups
 
 In addition, it is possible to create groups of routes.
 
@@ -105,7 +105,7 @@ $router->group('/api/', function (RouterInterface $router): void {
 });
 ```
 
-#### Isolated Route Files
+### Isolated Route Files
 
 For more convenience and easier readability of the code you can separate
 your groups / routes into separate files as you will see below
