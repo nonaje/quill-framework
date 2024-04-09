@@ -7,16 +7,19 @@ namespace Quill\Loaders;
 use InvalidArgumentException;
 use Quill\Contracts\Configuration\ConfigurationInterface;
 use Quill\Contracts\Loader\FilesLoader;
+use Quill\Support\Traits\Singleton;
 
-final readonly class DotEnvLoader implements FilesLoader
+final class DotEnvLoader implements FilesLoader
 {
-    public function __construct(
-        private ConfigurationInterface $config
+    use Singleton;
+
+    protected function __construct(
+        private readonly ConfigurationInterface $config
     )
     {
     }
 
-    public function loadFiles(array $filenames): void
+    public function loadFiles(string ...$filenames): void
     {
         if (count($filenames) > 1) {
             throw new InvalidArgumentException('Only one dotenv file can be loaded.');

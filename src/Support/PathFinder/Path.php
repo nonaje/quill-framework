@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace Quill\Support\PathFinder;
 
-use Quill\Contracts\Path\PathFinderInterface;
+use Quill\Contracts\Support\PathFinderInterface;
 use Quill\Exceptions\FileNotFoundException;
+use Quill\Support\Traits\Singleton;
 
 /**
  *
  */
 final class Path implements PathFinderInterface
 {
-    public function __construct(
+    use Singleton;
+
+    protected function __construct(
         private string $applicationPath = __DIR__ . '/../../../../../..'
     )
     {

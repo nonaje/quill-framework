@@ -10,6 +10,7 @@ use Quill\Router\Route;
 
 /**
  * @method Route get(string $uri, Closure|array $target)
+ * @method Route head(string $uri, Closure|array $target)
  * @method Route post(string $uri, Closure|array $target)
  * @method Route put(string $uri, Closure|array $target)
  * @method Route patch(string $uri, Closure|array $target)
@@ -19,7 +20,7 @@ interface RouterInterface
 {
     public function map(string $method, string $uri, Closure|array $target): RouteInterface;
 
-    public function loadRoutesFrom(string ...$filenames): self;
+    public function loadRoutesFrom(string ...$filenames): RouterInterface;
 
     public function group(string $prefix, Closure $routes): RouteGroupInterface;
 

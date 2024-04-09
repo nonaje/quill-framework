@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Quill\Config\Config;
 use Quill\Contracts\ApplicationInterface;
-use Quill\Contracts\Path\PathFinderInterface;
+use Quill\Contracts\Support\PathFinderInterface;
 use Quill\Factory\QuillFactory;
 use Quill\Support\Dot\Parser;
 
@@ -26,7 +26,7 @@ if (!function_exists('config')) {
     /** @return Config|mixed */
     function config(string $key = null, mixed $default = null): mixed
     {
-        $config = Config::make(new Parser());
+        $config = Config::make(Parser::make());
 
         if ($key === null) {
             return $config;

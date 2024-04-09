@@ -6,7 +6,7 @@ namespace Quill\Contracts\Router;
 
 use Closure;
 use Psr\Http\Server\MiddlewareInterface;
-use Quill\Enum\Http\HttpMethod;
+use Quill\Enums\Http\HttpMethod;
 
 interface RouteInterface
 {

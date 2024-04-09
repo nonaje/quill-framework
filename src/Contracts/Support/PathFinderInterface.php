@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quill\Contracts\Path;
+namespace Quill\Contracts\Support;
 
 use Quill\Exceptions\FileNotFoundException;
 

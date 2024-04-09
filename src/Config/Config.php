@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace Quill\Config;
 
 use Quill\Contracts\Configuration\ConfigurationInterface;
-use Quill\Support\Dot\Parser;
-use Quill\Support\Pattern\Singleton;
+use Quill\Contracts\Support\DotNotationParserInterface;
+use Quill\Support\Traits\Singleton;
 
-class Config extends Singleton implements ConfigurationInterface
+class Config implements ConfigurationInterface
 {
+    use Singleton;
+
     private array $items = [];
 
     protected function __construct(
-        private readonly Parser $parser
+        private readonly DotNotationParserInterface $parser
     )
     {
-        parent::__construct();
     }
 
     public function all(): array
@@ -27,37 +28,32 @@ class Config extends Singleton implements ConfigurationInterface
     public function get(string $key, mixed $default = null): mixed
     {
         $key = strtolower($key);
-
         $this->parser->parse($key);
 
-        return $this->searchInItems() ?? $default;
-    }
-
-    private function searchInItems(): mixed
-    {
         $value = null;
 
         foreach ($this->parser->list() as $pointer) {
             $value = $this->items[$pointer] ?? $value[$pointer] ?? null;
         }
 
-        return $value;
+        return $value ?? $default;
     }
 
     public function put(string $key, mixed $value): void
     {
         $key = strtolower($key);
+        $this->parser->parse($key);
 
-        $result = [];
-        $reference = &$result;
+        $items = &$this->items;
 
-        foreach ($this->parser->parse($key)->list() as $key) {
-            $reference[$key] = [];
-            $reference = &$reference[$key];
+        foreach ($this->parser->list() as $_key) {
+            if (!isset($items[$_key]) || !is_array($items[$_key])) {
+                $items[$_key] = [];
+            }
+
+            $items = &$items[$_key];
         }
 
-        $reference = $value;
-        unset($reference);
-        $this->items = array_merge_recursive($result, $this->items);
+        $items = $value;
     }
 }

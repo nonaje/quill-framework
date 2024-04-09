@@ -10,7 +10,6 @@ use Psr\Http\Message\ResponseInterface;
 use Quill\Handler\RequestHandlerStack;
 use Quill\Loaders\ConfigurationFilesLoader;
 use Quill\Loaders\DotEnvLoader;
-use Quill\Loaders\RouteFilesLoader;
 use Quill\Quill;
 use Quill\Response\ResponseMessenger;
 use Quill\Router\MiddlewareStore;
@@ -44,19 +43,18 @@ final class QuillFactory
             }
         };
 
-        $config = Config::make(new Parser);
+        $config = Config::make(Parser::make());
 
         return Quill::make(
             config: $config,
-            configurationFilesLoader: new ConfigurationFilesLoader($config),
-            dotEnvLoader: new DotEnvLoader($config),
-            pathFinder: new Path,
-            stack: new RequestHandlerStack,
+            configurationFilesLoader: ConfigurationFilesLoader::make($config),
+            dotEnvLoader: DotEnvLoader::make($config),
+            pathFinder: Path::make(),
+            stack: RequestHandlerStack::make(),
             uses: new MiddlewareStore,
-            messenger: new ResponseMessenger,
+            messenger: ResponseMessenger::make(),
             errorHandler: $errorHandler,
             router: new Router(
-                routeFilesLoader: new RouteFilesLoader,
                 store: new RouteStore,
                 middlewares: new MiddlewareStore,
             )

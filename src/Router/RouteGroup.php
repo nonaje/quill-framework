@@ -6,16 +6,20 @@ namespace Quill\Router;
 
 use Closure;
 use LogicException;
-use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteGroupInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouterInterface;
-use Quill\Loaders\RouteFilesLoader;
+use Quill\Support\Traits\CanHasMiddlewares;
 
 readonly class RouteGroup implements RouteGroupInterface
 {
-    private function __construct(private RouterInterface $router, private MiddlewareStoreInterface $middlewares)
+    use CanHasMiddlewares;
+
+    private function __construct(
+        private RouterInterface $router,
+        private MiddlewareStoreInterface $middlewares
+    )
     {
     }
 
@@ -28,7 +32,7 @@ readonly class RouteGroup implements RouteGroupInterface
         $prefix = trim($prefix, '/');
         $prefix = ($prefix == '/') ? $prefix : "/$prefix/";
 
-        $router = new Router(new RouteFilesLoader, new RouteStore, new MiddlewareStore, $prefix);
+        $router = new Router(new RouteStore, new MiddlewareStore, $prefix);
 
         $group = new RouteGroup($router, $middlewares);
 
@@ -47,14 +51,17 @@ readonly class RouteGroup implements RouteGroupInterface
     public function routes(MiddlewareStoreInterface $parentMiddlewares = null): array
     {
         $routes = [];
-        $groupMiddlewares = $parentMiddlewares ? array_merge_recursive(
-            $this->getMiddlewares()->all(),
-            $parentMiddlewares->all()
-        ) : $this->getMiddlewares()->all();
+        $groupMiddlewares = array_merge(
+            array_flatten($this->getMiddlewares()->all()),
+            array_flatten($parentMiddlewares ? $parentMiddlewares->all() : [])
+        );
 
         foreach ($this->router->routes() as $unsolved) {
             if ($unsolved instanceof RouteInterface) {
-                $routeMiddlewares = array_merge_recursive($groupMiddlewares, $unsolved->getMiddlewares()->all());
+                $routeMiddlewares = array_merge(
+                    $groupMiddlewares,
+                    array_flatten($unsolved->getMiddlewares()->all())
+                );
 
                 if ($routeMiddlewares) {
                     $unsolved->getMiddlewares()->reset()->add($routeMiddlewares);
@@ -75,17 +82,5 @@ readonly class RouteGroup implements RouteGroupInterface
         }
 
         return $routes;
-    }
-
-    public function getMiddlewares(): MiddlewareStoreInterface
-    {
-        return $this->middlewares;
-    }
-
-    public function middleware(array|string|Closure|MiddlewareInterface $middleware): RouteGroupInterface
-    {
-        $this->middlewares->add($middleware);
-
-        return $this;
     }
 }

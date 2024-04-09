@@ -9,10 +9,15 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Quill\Contracts\Handler\RequestHandlerChainInterface;
 use LogicException;
 use Quill\Factory\Middleware\RequestHandlerFactory;
+use Quill\Support\Traits\Singleton;
 
-class RequestHandlerStack implements RequestHandlerChainInterface
+final class RequestHandlerStack implements RequestHandlerChainInterface
 {
+    use Singleton;
+
     private null|RequestHandlerInterface $last = null;
+
+    protected function __construct() {}
 
     public function stack(MiddlewareInterface $middleware): RequestHandlerChainInterface
     {

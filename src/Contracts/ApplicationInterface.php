@@ -8,8 +8,8 @@ use Closure;
 use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Configuration\ConfigurationInterface;
 use Quill\Contracts\Handler\ErrorHandlerInterface;
-use Quill\Contracts\Path\PathFinderInterface;
 use Quill\Contracts\Router\RouterInterface;
+use Quill\Contracts\Support\PathFinderInterface;
 
 interface ApplicationInterface
 {

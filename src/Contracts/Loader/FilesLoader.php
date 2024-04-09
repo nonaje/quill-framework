@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Quill\Contracts\Loader;
 
-use InvalidArgumentException;
+use Quill\Exceptions\FileNotFoundException;
 
 interface FilesLoader
 {
     /**
-     * @throws InvalidArgumentException
+     * @throws FileNotFoundException
      */
-    public function loadFiles(array $filenames): void;
+    public function loadFiles(string ...$filenames): void;
 }

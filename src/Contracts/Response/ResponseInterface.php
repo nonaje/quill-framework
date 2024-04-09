@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Quill\Contracts\Response;
 
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
-use Quill\Enum\Http\HttpCode;
+use Quill\Enums\Http\HttpCode;
 
 interface ResponseInterface
 {

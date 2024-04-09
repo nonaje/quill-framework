@@ -6,9 +6,9 @@ namespace Quill\Response;
 
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Quill\Contracts\Response\ResponseInterface;
-use Quill\Enum\Http\HttpCode;
-use Quill\Enum\Http\HttpHeader;
-use Quill\Enum\Http\MimeType;
+use Quill\Enums\Http\HttpCode;
+use Quill\Enums\Http\HttpHeader;
+use Quill\Enums\Http\MimeType;
 use Quill\Factory\Psr7\Psr7Factory;
 
 class Response implements ResponseInterface

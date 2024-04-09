@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quill\Enum;
+namespace Quill\Enums;
 
 trait Steroids
 {

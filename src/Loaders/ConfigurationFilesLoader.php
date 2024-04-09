@@ -7,12 +7,14 @@ namespace Quill\Loaders;
 use Quill\Contracts\Configuration\ConfigurationInterface;
 use Quill\Contracts\Loader\FilesLoader;
 use Quill\Exceptions\FileNotFoundException;
-use Quill\Support\PathFinder\Path;
+use Quill\Support\Traits\Singleton;
 
-final readonly class ConfigurationFilesLoader implements FilesLoader
+final class ConfigurationFilesLoader implements FilesLoader
 {
-    public function __construct(
-        private ConfigurationInterface $config,
+    use Singleton;
+
+    protected function __construct(
+        private readonly ConfigurationInterface $config,
     )
     {
     }
@@ -20,7 +22,7 @@ final readonly class ConfigurationFilesLoader implements FilesLoader
     /**
      * @throws FileNotFoundException
      */
-    public function loadFiles(array $filenames): void
+    public function loadFiles(string ...$filenames): void
     {
         foreach ($filenames as $filename) {
             $this->loadConfig($filename);

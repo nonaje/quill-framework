@@ -13,10 +13,10 @@ use Quill\Contracts\Configuration\ConfigurationInterface;
 use Quill\Contracts\Handler\ErrorHandlerInterface;
 use Quill\Contracts\Handler\RequestHandlerChainInterface;
 use Quill\Contracts\Loader\FilesLoader;
-use Quill\Contracts\Path\PathFinderInterface;
 use Quill\Contracts\Response\ResponseMessengerInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouterInterface;
+use Quill\Contracts\Support\PathFinderInterface;
 use Quill\Factory\Psr7\Psr7Factory;
 use Quill\Factory\QuillResponseFactory;
 use Quill\Links\ExecuteRouteMiddlewares;
@@ -24,10 +24,12 @@ use Quill\Links\ExecuteRouteTarget;
 use Quill\Links\HandlePossibleFutureError;
 use Quill\Links\IdentifySearchedRoute;
 use Quill\Links\ResolveRouteParameters;
-use Quill\Support\Pattern\Singleton;
+use Quill\Support\Traits\Singleton;
 
-final class Quill extends Singleton implements ApplicationInterface
+final class Quill implements ApplicationInterface
 {
+    use Singleton;
+
     private ErrorHandlerInterface $errorHandler;
 
     protected function __construct(
@@ -42,8 +44,6 @@ final class Quill extends Singleton implements ApplicationInterface
         ErrorHandlerInterface                           $errorHandler
     )
     {
-        parent::__construct();
-
         $this->setErrorHandler($errorHandler);
     }
 
@@ -94,14 +94,14 @@ final class Quill extends Singleton implements ApplicationInterface
 
     public function loadConfigurationFiles(string ...$filenames): ApplicationInterface
     {
-        $this->configurationFilesLoader->loadFiles($filenames);
+        $this->configurationFilesLoader->loadFiles(...$filenames);
 
         return $this;
     }
 
     public function loadDotEnv(string $filename = ''): ApplicationInterface
     {
-        $this->dotEnvLoader->loadFiles([$filename]);
+        $this->dotEnvLoader->loadFiles($filename);
 
         return $this;
     }

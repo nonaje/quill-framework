@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Quill\Contracts\Pipeline;
+namespace Quill\Contracts\Support;
 
 interface PipelineInterface
 {

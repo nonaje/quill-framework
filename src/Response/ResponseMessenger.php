@@ -6,13 +6,17 @@ namespace Quill\Response;
 
 use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Response\ResponseMessengerInterface;
+use Quill\Support\Traits\Singleton;
 
 final class ResponseMessenger implements ResponseMessengerInterface
 {
+    use Singleton;
+
+    protected function __construct() {}
+
     public function send(ResponseInterface $response): void
     {
         $this->sendHeaders($response);
-        $this->sendStatusCode($response);
         $this->sendBody($response);
     }
 
@@ -34,11 +38,6 @@ final class ResponseMessenger implements ResponseMessengerInterface
                 header("$key: $value");
             }
         }
-    }
-
-    private function sendStatusCode(ResponseInterface $response): void
-    {
-        http_response_code($response->getPsrResponse()->getStatusCode());
     }
 
     private function sendBody(ResponseInterface $response): void

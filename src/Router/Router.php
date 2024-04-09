@@ -5,29 +5,30 @@ declare(strict_types=1);
 namespace Quill\Router;
 
 use Closure;
-use InvalidArgumentException;
 use LogicException;
-use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Loader\FilesLoader;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteGroupInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouterInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
-use Quill\Enum\Http\HttpMethod;
+use Quill\Enums\Http\HttpMethod;
+use Quill\Exceptions\FileNotFoundException;
+use Quill\Support\Traits\CanHasMiddlewares;
 
-readonly class Router implements RouterInterface
+final readonly class Router implements RouterInterface
 {
+    use CanHasMiddlewares;
+
     public function __construct(
-        protected FilesLoader              $routeFilesLoader,
-        protected RouteStoreInterface      $store,
-        protected MiddlewareStoreInterface $middlewares,
-        protected string                   $prefix = ''
+        private RouteStoreInterface         $store,
+        private MiddlewareStoreInterface    $middlewares,
+        private string                      $prefix = ''
     )
     {
     }
 
-    public function __call(string $method, array $arguments = [])
+    public function __call(string $method, array $arguments = []): RouteInterface
     {
         if (in_array(strtoupper($method), HttpMethod::values())) {
             return $this->map($method, ...$arguments);
@@ -36,11 +37,15 @@ readonly class Router implements RouterInterface
         throw new LogicException("Undefined method " . self::class . "@$method");
     }
 
-    public function loadRoutesFrom(string ...$filenames): self
+    /**
+     * @throws FileNotFoundException
+     */
+    public function loadRoutesFrom(string ...$filenames): RouterInterface
     {
-        foreach ($filenames  as $filename) {
+        // TODO: Check if it is possible to transfer the logic to a class (Single Responsibility Principle)
+        foreach ($filenames as $filename) {
             if (! file_exists($filename)) {
-                throw new InvalidArgumentException("File: $filename does not exists");
+                throw new FileNotFoundException($filename);
             }
 
             $routes = require $filename;
@@ -80,13 +85,6 @@ readonly class Router implements RouterInterface
         $this->middlewares->reset();
 
         return $group;
-    }
-
-    public function middleware(string|array|Closure|MiddlewareInterface $middleware): self
-    {
-        $this->middlewares->add($middleware);
-
-        return $this;
     }
 
     public function routes(): array

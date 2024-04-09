@@ -6,13 +6,15 @@ namespace Quill\Router;
 
 use Closure;
 use LogicException;
-use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteInterface;
-use Quill\Enum\Http\HttpMethod;
+use Quill\Enums\Http\HttpMethod;
+use Quill\Support\Traits\CanHasMiddlewares;
 
 final readonly class Route implements RouteInterface
 {
+    use CanHasMiddlewares;
+
     private function __construct(
         private string                   $uri,
         private HttpMethod               $method,
@@ -97,13 +99,6 @@ final readonly class Route implements RouteInterface
         return $this;
     }
 
-    public function middleware(string|array|Closure|MiddlewareInterface $middleware): self
-    {
-        $this->middlewares->add($middleware);
-
-        return $this;
-    }
-
     public function uri(): string
     {
         return $this->uri;
@@ -122,10 +117,5 @@ final readonly class Route implements RouteInterface
     public function params(): array
     {
         return $this->params;
-    }
-
-    public function getMiddlewares(): MiddlewareStoreInterface
-    {
-        return $this->middlewares;
     }
 }

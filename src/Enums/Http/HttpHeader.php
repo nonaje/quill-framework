@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Quill\Enum\Http;
+namespace Quill\Enums\Http;
 
-use Quill\Enum\Steroids;
+use Quill\Enums\Steroids;
 
 enum HttpHeader: string
 {
