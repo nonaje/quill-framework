@@ -37,7 +37,12 @@ class Router implements RouterInterface
     /** @inheritDoc */
     public function group(string $prefix, Closure $routes): RouteGroupInterface
     {
-        $prefix = $this->prefix . '/' . trim($prefix, '/');
+        $prefix = '/' . trim($prefix, '/');
+        $previousPrefix = $this->prefix;
+        $this->prefix .= $prefix;
+
+        $routes($this);
+        dd($this->routes->all());
 
         return $this->routes->addGroup(new RouteGroup(
             prefix: $prefix,

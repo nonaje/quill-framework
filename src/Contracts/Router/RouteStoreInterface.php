@@ -22,14 +22,6 @@ interface RouteStoreInterface
     public function clear(): void;
 
     /**
-     * Adds a new route group to the store.
-     *
-     * @param RouteGroupInterface $group
-     * @return RouteGroupInterface
-     */
-    public function addGroup(RouteGroupInterface $group): RouteGroupInterface;
-
-    /**
      * Retrieves all compiled routes, including those within groups.
      *
      * The routes from groups are expanded with their full paths and middlewares,

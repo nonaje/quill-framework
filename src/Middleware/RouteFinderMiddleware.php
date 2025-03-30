@@ -15,9 +15,9 @@ use Quill\Enums\RequestAttribute;
 use Quill\Exception\RouteNotFoundException;
 use Quill\Router\Route;
 
-final readonly class FindRouteMiddleware implements MiddlewareInterface
+class RouteFinderMiddleware implements MiddlewareInterface
 {
-    public function __construct(private RouterInterface $router) { }
+    public function __construct(protected RouterInterface $router) { }
 
     /**
      * Processes the incoming server request to find the matching route and pass it to the handler.

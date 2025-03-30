@@ -7,7 +7,10 @@ namespace Quill;
 use Closure;
 use Nyholm\Psr7\Uri;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Quill\Container\Container;
 use Quill\Contracts\ApplicationInterface;
 use Quill\Contracts\Configuration\ConfigurationInterface;
@@ -26,8 +29,9 @@ use Quill\Contracts\Support\PathResolverInterface;
 use Quill\Enums\Http\HttpMethod;
 use Quill\Handler\Error\JsonErrorHandler;
 use Quill\Handler\RequestHandler;
+use Quill\Middleware\ExecuteGlobalUserDefinedMiddlewares;
 use Quill\Middleware\ExecuteRouteMiddlewares;
-use Quill\Middleware\FindRouteMiddleware;
+use Quill\Middleware\RouteFinderMiddleware;
 use Quill\Response\Response;
 use Quill\Response\ResponseSender;
 use Quill\Router\MiddlewareStore;
@@ -41,12 +45,11 @@ use Quill\Loaders\ConfigurationFilesLoader;
 use Quill\Loaders\DotEnvLoader;
 use Quill\Loaders\RouteFilesLoader;
 
-class Quill extends Router implements ApplicationInterface
+class Quill extends Router implements ApplicationInterface, RequestHandlerInterface
 {
     protected function __construct(
         protected(set) MiddlewarePipelineInterface $pipeline,
-        protected(set) MiddlewareStoreInterface $middlewares,
-        protected(set) RequestInterface $request,
+        protected(set) RequestHandlerInterface $requestHandler,
         protected(set) ResponseSenderInterface $response,
         RouteStoreInterface $routes,
         ContainerInterface $container
@@ -55,26 +58,47 @@ class Quill extends Router implements ApplicationInterface
     }
 
     /** @inheritDoc */
-    public function up(): never
+    public function process(ServerRequestInterface $request): never
     {
-        /** @var ResponseInterface $response */
-        $response = $this->pipeline
-            ->send($this->request->getPsrRequest())
-            ->through([
-                new FindRouteMiddleware($this),
-                // Run user-defined global middlewares before the route middlewares.
-                ...$this->middlewares->all(),
-                new ExecuteRouteMiddlewares(new $this->pipeline),
-            ])
-            ->to(new RequestHandler())
-            ->getResponse();
+        $this->response->send(new Response(
+            psrResponse: $this->handle($request)
+        ));
+    }
 
-        $this->response->send(new Response($response));
+    /** @ineritDoc */
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        return $this->pipeline
+            ->send($request)
+            ->through($this->middlewares())
+            ->to($this->requestHandler)
+            ->getResponse();
+    }
+
+    public function use(string|array|\Closure|MiddlewareInterface $middleware): ApplicationInterface
+    {
+        /** @var ExecuteGlobalUserDefinedMiddlewares $pipeline */
+        $pipeline = $this->container->get(ExecuteGlobalUserDefinedMiddlewares::class);
+        $pipeline->middlewares->add($middleware);
     }
 
     public function isProduction(): bool
     {
         return config('env.is_production', false);
+    }
+
+    protected function middlewares(): array
+    {
+        /** @var ConfigurationInterface $config */
+        $config = $this->container->get(ConfigurationInterface::class);
+
+        return array_map(
+            function (string $middleware) {
+                // TODO: Possible more types of middlewares
+                return $this->container->get($middleware);
+            },
+            $config->get('app.middlewares', [])
+        );
     }
 
     public static function make(ContainerInterface $container, string $appRoot = ''): Quill
@@ -84,17 +108,11 @@ class Quill extends Router implements ApplicationInterface
                 id: self::class,
                 resolver: fn (ContainerInterface $containre) => new self(
                     pipeline: $container->get(\Quill\Contracts\Middleware\MiddlewarePipelineInterface::class),
-                    middlewares: $container->get(\Quill\Contracts\Router\MiddlewareStoreInterface::class),
-                    request: $container->get(\Quill\Contracts\Request\RequestInterface::class),
+                    requestHandler: $container->get(\Quill\Handler\RequestHandler::class),
                     response: $container->get(\Quill\Contracts\Response\ResponseSenderInterface::class),
                     routes: $container->get(\Quill\Contracts\Router\RouteStoreInterface::class),
                     container: $container
                 )
-            );
-
-            $container->register(
-                id: RouterInterface::class,
-                resolver: fn (ContainerInterface $containre) => new Router($container, $container->get(RouteStoreInterface::class))
             );
         }
 

@@ -13,9 +13,6 @@ class RouteStore implements RouteStoreInterface
     /** @var RouteInterface[] $routes */
     private array $routes = [];
 
-    /** @var RouteGroupInterface[] $routes */
-    private array $groups = [];
-
     /** @ineritDoc */
     public function add(RouteInterface $route): RouteInterface
     {
@@ -25,37 +22,14 @@ class RouteStore implements RouteStoreInterface
     }
 
     /** @ineritDoc */
-    public function addGroup(RouteGroupInterface $group): RouteGroupInterface
-    {
-        $this->groups[] = $group;
-
-        return $group;
-    }
-
-    /** @ineritDoc */
     public function all(): array
     {
-        return array_merge($this->routes, $this->resolveGroupsRoutes());
-    }
-
-    /**
-     * @return array
-     */
-    private function resolveGroupsRoutes(): array
-    {
-        $routes = [];
-
-        foreach ($this->groups as $group) {
-            $routes = array_merge($routes, $group->routes());
-        }
-
-        return $routes;
+        return $this->routes;
     }
 
     /** @ineritDoc */
     public function clear(): void
     {
         $this->routes = [];
-        $this->groups = [];
     }
 }

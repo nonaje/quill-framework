@@ -4,17 +4,25 @@ declare(strict_types=1);
 
 namespace Quill\Loaders;
 
+use FilesystemIterator;
 use Quill\Contracts\Container\ContainerInterface;
 use Quill\Contracts\Loader\FilesLoader;
 use Quill\Contracts\Router\RouterInterface;
 use Quill\Contracts\Support\PathResolverInterface;
 use Quill\Support\Path;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * Loads route definitions from files into the router
  */
 final readonly class RouteFilesLoader implements FilesLoader
 {
+    /**
+     * PHP file extension constant
+     */
+    private const string PHP_EXTENSION = 'php';
+
     /**
      * @param ContainerInterface $container The dependency injection container
      */
@@ -41,10 +49,6 @@ final readonly class RouteFilesLoader implements FilesLoader
         // Otherwise, load all routes from the routes directory
         $routesPath = $this->container->get(PathResolverInterface::class)->toFile('routes');
 
-        if (!is_dir($routesPath)) {
-            return;
-        }
-
         $this->loadRoutesFromDirectory($routesPath);
     }
 
@@ -56,10 +60,19 @@ final readonly class RouteFilesLoader implements FilesLoader
      */
     private function loadRoutesFromDirectory(string $directory): void
     {
-        $files = glob("$directory/*.php") ?: [];
+        if (!is_dir($directory)) {
+            return;
+        }
 
-        foreach ($files as $file) {
-            $this->loadRouteFile($file);
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === self::PHP_EXTENSION) {
+                $this->loadRouteFile($file->getPathname());
+            }
         }
     }
 

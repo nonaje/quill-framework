@@ -12,9 +12,9 @@ use Quill\Contracts\Middleware\MiddlewarePipelineInterface;
 use Quill\Enums\RequestAttribute;
 use Quill\Router\Route;
 
-final readonly class ExecuteRouteMiddlewares implements MiddlewareInterface
+class ExecuteRouteMiddlewares implements MiddlewareInterface
 {
-    public function __construct(private MiddlewarePipelineInterface $middlewarePipeline) { }
+    public function __construct(protected MiddlewarePipelineInterface $middlewarePipeline) { }
 
     /**
      * Processes the middlewares attached to the route
