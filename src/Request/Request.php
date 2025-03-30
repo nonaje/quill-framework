@@ -10,11 +10,15 @@ use Quill\Contracts\Router\RouteInterface;
 use Quill\Enums\Http\HttpMethod;
 use Quill\Enums\RequestAttribute;
 
-readonly class Request implements RequestInterface
+class Request implements RequestInterface
 {
-    public function __construct(protected ServerRequestInterface $psrRequest)
-    {
-    }
+    public function __construct(
+        public ServerRequestInterface $psrRequest {
+            get {
+                return $this->psrRequest;
+            }
+        }
+    ) {}
 
     /** @ineritDoc */
     public function route(string $key, mixed $default = null): mixed
@@ -24,19 +28,13 @@ readonly class Request implements RequestInterface
 
     private function getRoute(): RouteInterface
     {
-        return $this->getPsrRequest()->getAttribute(RequestAttribute::ROUTE->value);
-    }
-
-    /** @ineritDoc */
-    public function getPsrRequest(): ServerRequestInterface
-    {
-        return $this->psrRequest;
+        return $this->psrRequest->getAttribute(RequestAttribute::ROUTE->value);
     }
 
     /** @ineritDoc */
     public function method(): HttpMethod
     {
-        return HttpMethod::from(strtoupper($this->getPsrRequest()->getMethod()));
+        return HttpMethod::from(strtoupper($this->psrRequest->getMethod()));
     }
 
     /** @ineritDoc */
@@ -59,8 +57,17 @@ readonly class Request implements RequestInterface
 
     private function json(string $key, mixed $default): mixed
     {
-        $body = json_decode($this->getPsrRequest()->getBody()->getContents(), true) ?? $default;
+        $body = json_decode($this->psrRequest->getBody()->getContents(), true) ?? $default;
 
         return $key ? ($body[$key] ?? $default) : $body;
+    }
+
+    public function __call(string $name, array $arguments)
+    {
+        if (method_exists($this->psrRequest, $name)) {
+            return $this->psrRequest->{$name}(... $arguments);
+        }
+
+        throw new \BadMethodCallException();
     }
 }

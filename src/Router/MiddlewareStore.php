@@ -18,9 +18,7 @@ final class MiddlewareStore implements MiddlewareStoreInterface
     /** @var MiddlewareInterface[] $stack */
     private array $stack = [];
 
-    public function __construct(private readonly ContainerInterface $container)
-    {
-    }
+    public function __construct(private readonly ContainerInterface $container) { }
 
     public function add(string|array|Closure|MiddlewareInterface $middleware): self
     {

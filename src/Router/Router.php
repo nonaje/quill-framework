@@ -5,17 +5,19 @@ namespace Quill\Router;
 use Closure;
 use Nyholm\Psr7\Uri;
 use Psr\Http\Message\UriInterface;
-use Quill\Container\Container;
 use Quill\Contracts\Container\ContainerInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
-use Quill\Contracts\Router\RouteGroupInterface;
-use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouterInterface;
 use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Enums\Http\HttpMethod;
 
 class Router implements RouterInterface
 {
+    public const string PATH_SEPARATOR = '/';
+
+    protected array $groupPrefixStack = [];
+    protected array $groupMiddlewareStack = [];
+
     public function __construct(
         protected ContainerInterface $container,
         protected RouteStoreInterface $routes,
@@ -35,73 +37,80 @@ class Router implements RouterInterface
     }
 
     /** @inheritDoc */
-    public function group(string $prefix, Closure $routes): RouteGroupInterface
+    public function group(string $prefix, Closure $routes, array $middlewares = []): void
     {
-        $prefix = '/' . trim($prefix, '/');
-        $previousPrefix = $this->prefix;
-        $this->prefix .= $prefix;
+        $prefix = trim($prefix, self::PATH_SEPARATOR);
+        $this->groupPrefixStack[] = $prefix;
+        $this->groupMiddlewareStack[] = $middlewares;
 
         $routes($this);
-        dd($this->routes->all());
 
-        return $this->routes->addGroup(new RouteGroup(
-            prefix: $prefix,
-            routes: $routes,
-            router: new Router($this->container, new $this->routes, $prefix),
-            middlewares: $this->container->get(MiddlewareStoreInterface::class),
-        ));
+        array_pop($this->groupPrefixStack);
+        array_pop($this->groupMiddlewareStack);
+    }
+
+    protected function groupPrefix(): string
+    {
+        return $this->groupPrefixStack
+            ? self::PATH_SEPARATOR . implode(self::PATH_SEPARATOR, $this->groupPrefixStack)
+            : '';
     }
 
     /** @ineritDoc */
-    protected function route(HttpMethod $method, UriInterface $uri, Closure|array|string $target): RouteInterface
+    protected function route(HttpMethod $method, string $uri, Closure|array|string $target, array $middlewares = []): void
     {
-        return $this->routes->add(new Route(
-            uri: new Uri($this->prefix . '/' . trim($uri->__toString(), '/')),
+        $this->routes->add(new Route(
+            uri: new Uri($this->groupPrefix() . $this->normalizePath($uri)),
             method: $method,
             target: $target,
             middlewares: $this->container->get(MiddlewareStoreInterface::class),
         ));
     }
 
-    /** @ineritDoc */
-    public function get(string $path, array|string|Closure $target): RouteInterface
+    protected function normalizePath(string $path): string
     {
-        return $this->route(HttpMethod::GET, new Uri($path), $target);
+        return self::PATH_SEPARATOR . trim($path, self::PATH_SEPARATOR);
     }
 
     /** @ineritDoc */
-    public function post(string $path, array|string|Closure $target): RouteInterface
+    public function get(string $path, array|string|Closure $target, array $middlewares = []): void
     {
-        return $this->route(HttpMethod::POST, new Uri($path), $target);
+        $this->route(HttpMethod::GET, $path, $target, $middlewares);
     }
 
     /** @ineritDoc */
-    public function put(string $path, array|string|Closure $target): RouteInterface
+    public function post(string $path, array|string|Closure $target, array $middlewares = []): void
     {
-        return $this->route(HttpMethod::PUT, new Uri($path), $target);
+        $this->route(HttpMethod::POST, $path, $target, $middlewares);
     }
 
     /** @ineritDoc */
-    public function patch(string $path, array|string|Closure $target): RouteInterface
+    public function put(string $path, array|string|Closure $target, array $middlewares = []): void
     {
-        return $this->route(HttpMethod::PATCH, new Uri($path), $target);
+        $this->route(HttpMethod::PUT, $path, $target, $middlewares);
     }
 
     /** @ineritDoc */
-    public function delete(string $path, array|string|Closure $target): RouteInterface
+    public function patch(string $path, array|string|Closure $target, array $middlewares = []): void
     {
-        return $this->route(HttpMethod::DELETE, new Uri($path), $target);
+        $this->route(HttpMethod::PATCH, $path, $target, $middlewares);
     }
 
     /** @ineritDoc */
-    public function head(string $path, array|string|Closure $target): RouteInterface
+    public function delete(string $path, array|string|Closure $target, array $middlewares = []): void
     {
-        return $this->route(HttpMethod::HEAD, new Uri($path), $target);
+        $this->route(HttpMethod::DELETE, $path, $target, $middlewares);
     }
 
     /** @ineritDoc */
-    public function options(string $path, array|string|Closure $target): RouteInterface
+    public function head(string $path, array|string|Closure $target, array $middlewares = []): void
     {
-        return $this->route(HttpMethod::OPTIONS, new Uri($path), $target);
+        $this->route(HttpMethod::HEAD, $path, $target, $middlewares);
+    }
+
+    /** @ineritDoc */
+    public function options(string $path, array|string|Closure $target, array $middlewares = []): void
+    {
+        $this->route(HttpMethod::OPTIONS, $path, $target, $middlewares);
     }
 }

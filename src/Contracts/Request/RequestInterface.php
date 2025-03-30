@@ -8,12 +8,9 @@ use Psr\Http\Message\ServerRequestInterface;
 
 interface RequestInterface
 {
-    /**
-     * Retrieves the underlying PSR-7 server request.
-     *
-     * @return ServerRequestInterface
-     */
-    public function getPsrRequest(): ServerRequestInterface;
+    public ServerRequestInterface $psrRequest {
+        get;
+    }
 
     /**
      * Retrieves a parameter from the route's path or its default value if not present.

@@ -92,12 +92,16 @@ class Quill extends Router implements ApplicationInterface, RequestHandlerInterf
         /** @var ConfigurationInterface $config */
         $config = $this->container->get(ConfigurationInterface::class);
 
+        // Add global user defined middlewares
+        $this->container->get(ExecuteGlobalUserDefinedMiddlewares::class)
+            ->middlewares
+            ->add($config->get('app.middlewares'));
+
         return array_map(
             function (string $middleware) {
-                // TODO: Possible more types of middlewares
                 return $this->container->get($middleware);
             },
-            $config->get('app.middlewares', [])
+            $config->get('app.lifecycle', [])
         );
     }
 
