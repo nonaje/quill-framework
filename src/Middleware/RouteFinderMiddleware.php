@@ -58,10 +58,10 @@ class RouteFinderMiddleware implements MiddlewareInterface
             $this->router->clear();
 
             return new Route(
-                uri: $route->uri(),
-                method: $route->method(),
-                target: $route->target(),
-                middlewares: $route->getMiddlewares(),
+                uri: $route->uri,
+                method: $route->method,
+                target: $route->target,
+                middlewares: $route->middlewares,
                 params: $params
             );
         }
@@ -82,11 +82,11 @@ class RouteFinderMiddleware implements MiddlewareInterface
     private function resolveRoute(RouteInterface $route, ServerRequestInterface $request): array
     {
         // Check if the HTTP method matches
-        if ($route->method()->value !== strtoupper($request->getMethod())) {
+        if ($route->method->value !== strtoupper($request->getMethod())) {
             return [false, []];
         }
 
-        $routeParts = array_values(array_filter(explode('/', $route->uri()->__toString())));
+        $routeParts = array_values(array_filter(explode('/', $route->uri->__toString())));
         $wantedParts = array_values(array_filter(explode('/', $request->getUri()->getPath())));
 
         // Check if the number of URI segments match

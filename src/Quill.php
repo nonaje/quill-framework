@@ -17,6 +17,7 @@ use Quill\Contracts\Configuration\ConfigurationInterface;
 use Quill\Contracts\Container\ContainerInterface;
 use Quill\Contracts\ErrorHandler\ErrorHandlerInterface;
 use Quill\Contracts\Loader\FilesLoader;
+use Quill\Contracts\Middleware\MiddlewareFactoryInterface;
 use Quill\Contracts\Middleware\MiddlewarePipelineInterface;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Response\ResponseSenderInterface;
@@ -48,13 +49,12 @@ use Quill\Loaders\RouteFilesLoader;
 class Quill extends Router implements ApplicationInterface, RequestHandlerInterface
 {
     protected function __construct(
-        protected(set) MiddlewarePipelineInterface $pipeline,
-        protected(set) RequestHandlerInterface $requestHandler,
-        protected(set) ResponseSenderInterface $response,
-        RouteStoreInterface $routes,
-        ContainerInterface $container
+        protected MiddlewarePipelineInterface $pipeline,
+        protected RequestHandlerInterface $requestHandler,
+        protected ResponseSenderInterface $response,
+        protected MiddlewareFactoryInterface $middlewareFactory,
+        protected ContainerInterface $container
     ) {
-        parent::__construct($container, $routes);
     }
 
     /** @inheritDoc */
@@ -95,7 +95,7 @@ class Quill extends Router implements ApplicationInterface, RequestHandlerInterf
         // Add global user defined middlewares
         $this->container->get(ExecuteGlobalUserDefinedMiddlewares::class)
             ->middlewares
-            ->add($config->get('app.middlewares'));
+            ->add($config->get('app.middlewares', []));
 
         return array_map(
             function (string $middleware) {
@@ -114,7 +114,7 @@ class Quill extends Router implements ApplicationInterface, RequestHandlerInterf
                     pipeline: $container->get(\Quill\Contracts\Middleware\MiddlewarePipelineInterface::class),
                     requestHandler: $container->get(\Quill\Handler\RequestHandler::class),
                     response: $container->get(\Quill\Contracts\Response\ResponseSenderInterface::class),
-                    routes: $container->get(\Quill\Contracts\Router\RouteStoreInterface::class),
+                    middlewareFactory: $container->get(MiddlewareFactoryInterface::class),
                     container: $container
                 )
             );

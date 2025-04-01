@@ -42,32 +42,32 @@ final class RequestHandler implements RequestHandlerInterface
     private function resolveRouteTarget(): callable
     {
         return match (true) {
-            is_string($this->route->target()) => $this->resolveStringTarget(),
-            is_array($this->route->target()) => $this->resolveArrayTarget(),
-            is_callable($this->route->target()) => $this->resolveCallableTarget(),
+            is_string($this->route->target) => $this->resolveStringTarget(),
+            is_array($this->route->target) => $this->resolveArrayTarget(),
+            is_callable($this->route->target) => $this->resolveCallableTarget(),
             default => throw new LogicException('It is not possible to determine the target of the route'),
         };
     }
 
     private function resolveStringTarget(): callable
     {
-        $toResolve = explode('@', $this->route->target());
+        $toResolve = explode('@', $this->route->target);
         $controller = $toResolve[0];
         $method = $toResolve[1] ?? '__invoke';
 
-        return fn() => (new $controller($this->request, $this->response, $this->route->params()))->{$method}();
+        return fn() => (new $controller($this->request, $this->response, $this->route->params))->{$method}();
     }
 
     private function resolveArrayTarget(): callable
     {
-        $controller = $this->route->target()[0];
-        $method = $this->route->target()[1] ?? '__invoke';
+        $controller = $this->route->target[0];
+        $method = $this->route->target[1] ?? '__invoke';
 
-        return fn() => (new $controller($this->request, $this->response, $this->route->params()))->{$method}();
+        return fn() => (new $controller($this->request, $this->response, $this->route->params))->{$method}();
     }
 
     private function resolveCallableTarget(): callable
     {
-        return fn() => ($this->route->target())($this->request, $this->response, $this->route->params());
+        return fn() => ($this->route->target)($this->request, $this->response, $this->route->params);
     }
 }

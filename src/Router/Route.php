@@ -7,25 +7,22 @@ namespace Quill\Router;
 use Closure;
 use LogicException;
 use Psr\Http\Message\UriInterface;
-use Quill\Contracts\Router\MiddlewareStoreInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Enums\Http\HttpMethod;
 
-final readonly class Route implements RouteInterface
+class Route implements RouteInterface
 {
-    use Middlewares;
-
     public function __construct(
-        private UriInterface $uri,
-        private HttpMethod $method,
-        private Closure|array|string $target,
-        private MiddlewareStoreInterface $middlewares,
-        private array $params = [],
+        protected(set) UriInterface $uri,
+        protected(set) HttpMethod $method,
+        protected(set) Closure|array|string $target,
+        protected(set) array $middlewares = [],
+        protected(set) array $params = [],
     ) {
         $this->assert();
     }
 
-    private function assert(): self
+    protected function assert(): void
     {
         if (!str_starts_with($this->uri->__toString(), '/')) {
             throw new LogicException("URI $this->uri must starts with '/'");
@@ -81,27 +78,5 @@ final readonly class Route implements RouteInterface
                 'Invalid route params: ' . implode(', ', $this->params)
             );
         }
-
-        return $this;
-    }
-
-    public function uri(): UriInterface
-    {
-        return $this->uri;
-    }
-
-    public function method(): HttpMethod
-    {
-        return $this->method;
-    }
-
-    public function target(): Closure|array|string
-    {
-        return $this->target;
-    }
-
-    public function params(): array
-    {
-        return $this->params;
     }
 }

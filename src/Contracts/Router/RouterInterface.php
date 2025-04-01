@@ -20,6 +20,10 @@ interface RouterInterface
     public function head(string $path, Closure|array|string $target, array $middlewares = []): void;
     public function options(string $path, Closure|array|string $target, array $middlewares = []): void;
     public function group(string $prefix, Closure $routes, array $middlewares = []): void;
+
+    /**
+     * @return RouteInterface[]
+     */
     public function routes(): array;
     public function clear(): void;
 }

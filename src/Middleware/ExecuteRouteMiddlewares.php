@@ -30,7 +30,7 @@ class ExecuteRouteMiddlewares implements MiddlewareInterface
 
         return $this->middlewarePipeline
             ->send($request)
-            ->through($route->getMiddlewares()->all())
+            ->through($route->middlewares)
             ->to($handler)
             ->getResponse();
     }

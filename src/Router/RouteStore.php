@@ -10,8 +10,7 @@ use Quill\Contracts\Router\RouteStoreInterface;
 
 class RouteStore implements RouteStoreInterface
 {
-    /** @var RouteInterface[] $routes */
-    private array $routes = [];
+
 
     /** @ineritDoc */
     public function add(RouteInterface $route): RouteInterface

@@ -13,7 +13,7 @@ use Quill\Contracts\Container\ContainerInterface;
 
 final readonly class ClosureMiddleware implements MiddlewareInterface
 {
-    public function __construct(private readonly ContainerInterface $container, private Closure $middleware) { }
+    public function __construct(private ContainerInterface $container, private Closure $middleware) { }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {

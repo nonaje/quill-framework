@@ -4,39 +4,35 @@ namespace Quill\Router;
 
 use Closure;
 use Nyholm\Psr7\Uri;
-use Psr\Http\Message\UriInterface;
-use Quill\Contracts\Container\ContainerInterface;
-use Quill\Contracts\Router\MiddlewareStoreInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Quill\Contracts\Middleware\MiddlewareFactoryInterface;
+use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouterInterface;
-use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Enums\Http\HttpMethod;
 
 class Router implements RouterInterface
 {
     public const string PATH_SEPARATOR = '/';
 
+    /** @var RouteInterface[] $routes */
+    protected array $routes = [];
+
     protected array $groupPrefixStack = [];
+
     protected array $groupMiddlewareStack = [];
 
-    public function __construct(
-        protected ContainerInterface $container,
-        protected RouteStoreInterface $routes,
-        protected string $prefix = ''
-    ) {
-    }
+    public function __construct(protected MiddlewareFactoryInterface $middlewareFactory) { }
 
-    /** @inheritDoc */
     public function routes(): array
     {
-        return $this->routes->all();
+        return $this->routes;
     }
 
     public function clear(): void
     {
-        $this->routes->clear();
+        $this->routes = [];
     }
 
-    /** @inheritDoc */
     public function group(string $prefix, Closure $routes, array $middlewares = []): void
     {
         $prefix = trim($prefix, self::PATH_SEPARATOR);
@@ -49,22 +45,57 @@ class Router implements RouterInterface
         array_pop($this->groupMiddlewareStack);
     }
 
-    protected function groupPrefix(): string
+    public function get(string $path, array|string|Closure $target, array $middlewares = []): void
     {
-        return $this->groupPrefixStack
-            ? self::PATH_SEPARATOR . implode(self::PATH_SEPARATOR, $this->groupPrefixStack)
-            : '';
+        $this->route(HttpMethod::GET, $path, $target, $middlewares);
     }
 
-    /** @ineritDoc */
+    public function post(string $path, array|string|Closure $target, array $middlewares = []): void
+    {
+        $this->route(HttpMethod::POST, $path, $target, $middlewares);
+    }
+
+    public function put(string $path, array|string|Closure $target, array $middlewares = []): void
+    {
+        $this->route(HttpMethod::PUT, $path, $target, $middlewares);
+    }
+
+    public function patch(string $path, array|string|Closure $target, array $middlewares = []): void
+    {
+        $this->route(HttpMethod::PATCH, $path, $target, $middlewares);
+    }
+
+    public function delete(string $path, array|string|Closure $target, array $middlewares = []): void
+    {
+        $this->route(HttpMethod::DELETE, $path, $target, $middlewares);
+    }
+
+    public function head(string $path, array|string|Closure $target, array $middlewares = []): void
+    {
+        $this->route(HttpMethod::HEAD, $path, $target, $middlewares);
+    }
+
+    public function options(string $path, array|string|Closure $target, array $middlewares = []): void
+    {
+        $this->route(HttpMethod::OPTIONS, $path, $target, $middlewares);
+    }
+
+    /**
+     * @param array<int, array|string|Closure|MiddlewareInterface> $middlewares
+     */
     protected function route(HttpMethod $method, string $uri, Closure|array|string $target, array $middlewares = []): void
     {
-        $this->routes->add(new Route(
+        $middlewares = array_map(
+            fn (array|string|Closure|MiddlewareInterface $middleware) => $this->middlewareFactory->make($middleware),
+            array: $middlewares
+        );
+
+        $this->routes[] = new Route(
             uri: new Uri($this->groupPrefix() . $this->normalizePath($uri)),
             method: $method,
             target: $target,
-            middlewares: $this->container->get(MiddlewareStoreInterface::class),
-        ));
+            middlewares: $middlewares
+        );
     }
 
     protected function normalizePath(string $path): string
@@ -72,45 +103,10 @@ class Router implements RouterInterface
         return self::PATH_SEPARATOR . trim($path, self::PATH_SEPARATOR);
     }
 
-    /** @ineritDoc */
-    public function get(string $path, array|string|Closure $target, array $middlewares = []): void
+    protected function groupPrefix(): string
     {
-        $this->route(HttpMethod::GET, $path, $target, $middlewares);
-    }
-
-    /** @ineritDoc */
-    public function post(string $path, array|string|Closure $target, array $middlewares = []): void
-    {
-        $this->route(HttpMethod::POST, $path, $target, $middlewares);
-    }
-
-    /** @ineritDoc */
-    public function put(string $path, array|string|Closure $target, array $middlewares = []): void
-    {
-        $this->route(HttpMethod::PUT, $path, $target, $middlewares);
-    }
-
-    /** @ineritDoc */
-    public function patch(string $path, array|string|Closure $target, array $middlewares = []): void
-    {
-        $this->route(HttpMethod::PATCH, $path, $target, $middlewares);
-    }
-
-    /** @ineritDoc */
-    public function delete(string $path, array|string|Closure $target, array $middlewares = []): void
-    {
-        $this->route(HttpMethod::DELETE, $path, $target, $middlewares);
-    }
-
-    /** @ineritDoc */
-    public function head(string $path, array|string|Closure $target, array $middlewares = []): void
-    {
-        $this->route(HttpMethod::HEAD, $path, $target, $middlewares);
-    }
-
-    /** @ineritDoc */
-    public function options(string $path, array|string|Closure $target, array $middlewares = []): void
-    {
-        $this->route(HttpMethod::OPTIONS, $path, $target, $middlewares);
+        return $this->groupPrefixStack
+            ? self::PATH_SEPARATOR . implode(self::PATH_SEPARATOR, $this->groupPrefixStack)
+            : '';
     }
 }
