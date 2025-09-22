@@ -48,7 +48,7 @@ use Quill\Loaders\RouteFilesLoader;
 
 class Quill extends Router implements ApplicationInterface, RequestHandlerInterface
 {
-    protected(set) bool $isProduction;
+    public protected(set) bool $isProduction;
 
     protected function __construct(
         protected MiddlewarePipelineInterface $pipeline,
@@ -84,9 +84,7 @@ class Quill extends Router implements ApplicationInterface, RequestHandlerInterf
     /** @inheritDoc */
     public function processRequest(ServerRequestInterface $request): never
     {
-        $this->response->send(new Response(
-            psrResponse: $this->handle($request)
-        ));
+        $this->response->send($this->handle($request));
     }
 
     /** @ineritDoc */

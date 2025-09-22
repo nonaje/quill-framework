@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Quill\Response;
 
-use Quill\Contracts\Response\ResponseInterface;
+use Psr\Http\Message\ResponseInterface;
 use Quill\Contracts\Response\ResponseSenderInterface;
 use Quill\Enums\Http\HttpHeader;
 use Quill\Enums\Http\MimeType;
@@ -20,8 +20,7 @@ final class ResponseSender implements ResponseSenderInterface
 
     private function sendHeaders(ResponseInterface $response): void
     {
-        $psrResponse = $response->getPsrResponse();
-        $headers = $psrResponse->getHeaders();
+        $headers = $response->getHeaders();
         $headers[HttpHeader::CONTENT_TYPE->value] ??= MimeType::JSON->value;
 
         foreach ($headers as $key => $value) {
@@ -41,14 +40,14 @@ final class ResponseSender implements ResponseSenderInterface
         header(
             sprintf(
                 'HTTP/%s %d',
-                $psrResponse->getProtocolVersion(),
-                $psrResponse->getStatusCode()
+                $response->getProtocolVersion(),
+                $response->getStatusCode()
             )
         );
     }
 
     private function sendBody(ResponseInterface $response): void
     {
-        echo $response->getPsrResponse()->getBody()->getContents();
+        echo $response->getBody()->getContents();
     }
 }

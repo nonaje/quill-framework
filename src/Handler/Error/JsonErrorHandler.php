@@ -13,7 +13,7 @@ class JsonErrorHandler extends ErrorHandler
     protected function toResponse(): ResponseInterface
     {
         return $this->response
-            ->code(HttpCode::tryFrom($this->error->getCode()) ?? HttpCode::SERVER_ERROR)
+            ->code(HttpCode::tryFrom($this->error->getCode()) ?? HttpCode::INTERNAL_SERVER_ERROR)
             ->json($this->buildBody());
     }
 
@@ -21,7 +21,7 @@ class JsonErrorHandler extends ErrorHandler
     {
         $data = [
             'success' => false,
-            'code' => $this->error->getCode() ?: HttpCode::SERVER_ERROR,
+            'code' => $this->error->getCode() ?: HttpCode::INTERNAL_SERVER_ERROR,
             'message' => $this->error->getMessage(),
         ];
 

@@ -9,9 +9,9 @@ use Quill\Contracts\Container\ContainerInterface;
 
 interface ApplicationInterface
 {
-    protected(set) ContainerInterface $container { get; set; }
+    public protected(set) ContainerInterface $container { get; set; }
 
-    protected(set) bool $isProduction { get; set; }
+    public protected(set) bool $isProduction { get; set; }
 
     public function processRequest(ServerRequestInterface $request): never;
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Quill\Handler\Error;
 
 use ErrorException;
-use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Quill\Contracts\ErrorHandler\ErrorHandlerInterface;
@@ -58,7 +57,7 @@ abstract class ErrorHandler implements ErrorHandlerInterface
 
         if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
             $this->handleError(
-                errno: HttpCode::SERVER_ERROR->value,
+                errno: HttpCode::INTERNAL_SERVER_ERROR->value,
                 errstr: $error['message'] ?? 'Server Error',
                 errfile: $error['file'] ?? '',
                 errline: $error['line'] ?? 0
@@ -99,7 +98,7 @@ abstract class ErrorHandler implements ErrorHandlerInterface
         if (! $this->displayErrors) {
             $this->error = new ErrorException(
                 message: $this->error->getMessage() ?: "An internal server error occurred.",
-                code: $this->error->getCode() ?: HttpCode::SERVER_ERROR->value
+                code: $this->error->getCode() ?: HttpCode::INTERNAL_SERVER_ERROR->value
             );
         }
 
