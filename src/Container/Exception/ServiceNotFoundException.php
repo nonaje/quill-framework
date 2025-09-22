@@ -12,6 +12,6 @@ class ServiceNotFoundException extends Exception implements NotFoundExceptionInt
 {
     public function __construct(string $serviceId)
     {
-        parent::__construct("Service [$serviceId] not found.", HttpCode::SERVER_ERROR->value);
+        parent::__construct("Service [$serviceId] not found.", HttpCode::INTERNAL_SERVER_ERROR->value);
     }
 }

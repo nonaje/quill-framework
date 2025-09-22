@@ -10,6 +10,7 @@ use Quill\Contracts\Response\ResponseInterface;
 abstract class Controller
 {
     public function __construct(
+        protected readonly ContainerInterface $container,
         protected readonly RequestInterface $request,
         protected readonly ResponseInterface $response
     ) {

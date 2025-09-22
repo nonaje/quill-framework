@@ -5,194 +5,79 @@ declare(strict_types=1);
 namespace Quill\Response;
 
 use Exception;
+use Nyholm\Psr7\Response as PsrResponse;
+use Nyholm\Psr7\Stream;
 use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Quill\Contracts\Response\ResponseInterface;
 use Quill\Enums\Http\HttpCode;
 use Quill\Enums\Http\HttpHeader;
 use Quill\Enums\Http\MimeType;
 
-class Response implements ResponseInterface, PsrResponseInterface
+class Response extends PsrResponse implements ResponseInterface
 {
-    /** @inheritDoc */
-    public function plain(string $plain): PsrResponseInterface
+    public function __construct(
+        private HttpCode $status = HttpCode::INTERNAL_SERVER_ERROR,
+        private array $headers = [],
+        private ?StreamInterface $body = null,
+        private string $version = '1.1',
+        private string $reason = ''
+    ) {
+        parent::__construct(
+            status: $this->status->value,
+            headers: $this->headers,
+            body: $this->body ?? Stream::create(''),
+            version: $this->version,
+            reason: $this->reason
+        );
+    }
+
+    public function plain(string $plain): self
     {
         return $this->body($plain, MimeType::PLAIN_TEXT);
     }
 
-    /**
-     * Return the updated instance of the psr response with the new body and Content-Type header
-     *
-     * @param string $content
-     * @param MimeType $mime
-     * @return PsrResponseInterface
-     */
-    private function body(string $content, MimeType $mime): PsrResponseInterface
+    public function json(array $data): self
     {
-        return $this->getPsrResponse()
-            ->withBody(Psr7Factory::streamFactory()->createStream($content))
-            ->withHeader(HttpHeader::CONTENT_TYPE->value, $mime->value);
+        $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return $this->body($json ?: 'null', MimeType::JSON);
     }
 
-    /** @inheritDoc */
-    public function json(array $data): PsrResponseInterface
+    public function html(string $html): self
     {
-        return $this->setPsrResponse(
-            $this->body(json_encode($data), MimeType::JSON)
-        );
+        return $this->body($html, MimeType::HTML);
     }
 
     /**
      * @throws Exception
      */
-    public function view(string $view): PsrResponseInterface
+    public function view(string $view): self
     {
-        //Checks if the received argument is the name of a html file inside the 'views' folder
-        if (file_exists($path = $view) ||
-            file_exists($path = file_path($view)) ||
-            file_exists($path = file_path($view . '.html'))
+        if (file_exists($path = $view)
+            || file_exists($path = file_path($view))
+            || file_exists($path = file_path($view . '.html'))
         ) {
             $html = file_get_contents($path);
+            if ($html === false) {
+                throw new Exception('The view "' . $view . '" is not readable.');
+            }
             return $this->html($html);
         }
 
         throw new Exception('The view "' . $view . '" does not exist or is not readable.');
     }
 
-    /** @inheritDoc */
-    public function html(string $html): PsrResponseInterface
-    {
-        return $this->body($html, MimeType::HTML);
-    }
-
-    /** @inheritDoc */
-    public function code(HttpCode $code): PsrResponseInterface
+    public function code(HttpCode $code): self
     {
         return $this->withStatus($code->value);
     }
 
-    /**
-     * @return string
-     */
-    public function getProtocolVersion(): string
+    private function body(string $content, MimeType $mime): self
     {
-        // TODO: Implement getProtocolVersion() method.
-    }
+        $stream = Stream::create($content);
 
-    /**
-     * @param string $version
-     * @return MessageInterface
-     */
-    public function withProtocolVersion(string $version): MessageInterface
-    {
-        // TODO: Implement withProtocolVersion() method.
-    }
-
-    /**
-     * @return array
-     */
-    public function getHeaders(): array
-    {
-        // TODO: Implement getHeaders() method.
-    }
-
-    /**
-     * @param string $name
-     * @return bool
-     */
-    public function hasHeader(string $name): bool
-    {
-        // TODO: Implement hasHeader() method.
-    }
-
-    /**
-     * @param string $name
-     * @return array
-     */
-    public function getHeader(string $name): array
-    {
-        // TODO: Implement getHeader() method.
-    }
-
-    /**
-     * @param string $name
-     * @return string
-     */
-    public function getHeaderLine(string $name): string
-    {
-        // TODO: Implement getHeaderLine() method.
-    }
-
-    /**
-     * @param string $name
-     * @param $value
-     * @return MessageInterface
-     */
-    public function withHeader(string $name, $value): MessageInterface
-    {
-        // TODO: Implement withHeader() method.
-    }
-
-    /**
-     * @param string $name
-     * @param $value
-     * @return MessageInterface
-     */
-    public function withAddedHeader(string $name, $value): MessageInterface
-    {
-        // TODO: Implement withAddedHeader() method.
-    }
-
-    /**
-     * @param string $name
-     * @return MessageInterface
-     */
-    public function withoutHeader(string $name): MessageInterface
-    {
-        // TODO: Implement withoutHeader() method.
-    }
-
-    /**
-     * @return StreamInterface
-     */
-    public function getBody(): StreamInterface
-    {
-        // TODO: Implement getBody() method.
-    }
-
-    /**
-     * @param StreamInterface $body
-     * @return MessageInterface
-     */
-    public function withBody(StreamInterface $body): MessageInterface
-    {
-        // TODO: Implement withBody() method.
-    }
-
-    /**
-     * @return int
-     */
-    public function getStatusCode(): int
-    {
-        // TODO: Implement getStatusCode() method.
-    }
-
-    /**
-     * @param int $code
-     * @param string $reasonPhrase
-     * @return PsrResponseInterface
-     */
-    public function withStatus(int $code, string $reasonPhrase = ''): PsrResponseInterface
-    {
-        // TODO: Implement withStatus() method.
-    }
-
-    /**
-     * @return string
-     */
-    public function getReasonPhrase(): string
-    {
-        // TODO: Implement getReasonPhrase() method.
+        return $this
+            ->withHeader(HttpHeader::CONTENT_TYPE->value, $mime->value)
+            ->withBody($stream);
     }
 }

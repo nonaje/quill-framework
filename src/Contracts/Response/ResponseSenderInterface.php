@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Quill\Contracts\Response;
 
+use Psr\Http\Message\ResponseInterface;
+
 interface ResponseSenderInterface
 {
     /**
