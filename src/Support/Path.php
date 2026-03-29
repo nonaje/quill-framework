@@ -4,41 +4,51 @@ declare(strict_types=1);
 
 namespace Quill\Support;
 
-use Exception;
+use InvalidArgumentException;
 use Quill\Contracts\Support\PathResolverInterface;
 
 final readonly class Path implements PathResolverInterface
 {
-    public function __construct(private string $appRoot = APP_ROOT) { }
+    private string $appRoot;
 
-    /**
-     * Converts a path to a properly formatted file path relative to application root
-     *
-     * @param string $filename Path relative to application root
-     * @return string Fully qualified path
-     * @throws Exception If application path has not been set
-     */
-    public function toFile(string $filename = ''): string
+    public function __construct(string $appRoot)
     {
-        if (empty($filename)) {
-            return $this->appRoot;
+        $appRoot = trim($appRoot);
+
+        if ($appRoot === '') {
+            throw new InvalidArgumentException('Application root must be provided.');
         }
 
-        return $this->appRoot . self::normalize($filename);
+        $resolved = realpath($appRoot);
+
+        if ($resolved === false || !is_dir($resolved)) {
+            throw new InvalidArgumentException(sprintf('Application root "%s" is not a readable directory.', $appRoot));
+        }
+
+        $this->appRoot = rtrim(self::normalizeSeparators($resolved), '/');
     }
 
     /**
-     * Normalizes a path to ensure consistent formatting
-     *
-     * @param string $path Path to normalize
-     * @return string Normalized path
+     * Converts a path to a properly formatted file path relative to application root
      */
-    protected static function normalize(string $path): string
+    public function toFile(string $filename = ''): string
     {
-        // Convert backslashes to forward slashes for consistency
+        if ($filename === '') {
+            return $this->appRoot;
+        }
+
+        return $this->appRoot . '/' . self::normalizeRelativePath($filename);
+    }
+
+    private static function normalizeSeparators(string $path): string
+    {
         $path = str_replace('\\', '/', $path);
 
-        // Trim slashes and ensure path starts with a slash
-        return '/' . trim($path, '/');
+        return preg_replace('#/+#', '/', $path) ?: $path;
+    }
+
+    private static function normalizeRelativePath(string $path): string
+    {
+        return trim(self::normalizeSeparators($path), '/');
     }
 }

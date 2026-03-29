@@ -10,23 +10,13 @@ use Quill\Enums\Http\HttpMethod;
 
 interface RouteInterface
 {
-    public UriInterface $uri {
-        get;
-    }
+    public function getUri(): UriInterface;
 
-    public HttpMethod $method {
-        get;
-    }
+    public function getMethod(): HttpMethod;
 
-    public Closure|array|string $target {
-        get;
-    }
+    public function getTarget(): Closure|array|string;
 
-    public array $middlewares {
-        get;
-    }
+    public function getMiddlewares(): array;
 
-    public array $params {
-        get;
-    }
+    public function getParams(): array;
 }

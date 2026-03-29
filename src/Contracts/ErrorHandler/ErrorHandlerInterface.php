@@ -5,15 +5,10 @@ declare(strict_types=1);
 namespace Quill\Contracts\ErrorHandler;
 
 use ErrorException;
+use Throwable;
 
 interface ErrorHandlerInterface
 {
-    public bool $displayErrors { get; set; }
-
-    public bool $logErrors { get; set; }
-
-    public string $logFile { get; set; }
-
     /**
      * Handles general errors within the application.
      *
@@ -25,4 +20,10 @@ interface ErrorHandlerInterface
      * @throws ErrorException
      */
     public function handleError(int $errno, string $errstr, string $errfile = '', int $errline = 0): never;
+
+    public function handleException(Throwable $exception): never;
+
+    public function handleShutdown(): void;
+
+    public function listen(): void;
 }

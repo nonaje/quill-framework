@@ -56,7 +56,9 @@ final readonly class ConfigurationFilesLoader implements FilesLoader
 
         /** @var ConfigurationInterface $config */
         $config = $this->container->get(ConfigurationInterface::class);
-        $config->put($key, require $filepath);
+        $config->merge([
+            $key => require $filepath,
+        ]);
     }
 
     /**

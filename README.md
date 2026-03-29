@@ -1,154 +1,71 @@
-## Disclaimer
+# Quill Framework
 
-**This documentation is in progress and is updated every day.**
+Lightweight HTTP APIs that boot around a PSR-7/Nyholm runtime and a small router.
 
-**This is a development version of the Framework, use at your own risk.**
-
-## Quill
-
-A simple way to make lightweight PHP APIs
-
-## Installation
-
-The recommended way to install Quill is through
-[Composer](https://getcomposer.org/).
-
-```bash
-composer require nonaje/quill
-```
-
-## Basic Usage
-
-We can use Quill with a syntax similar to [Express.Js](https://expressjs.com/)
+## Canonical Bootstrap
 
 ```php
-<?php
+use Quill\Factory\QuillFactory;
 
-declare(strict_types=1);
+require __DIR__ . '/vendor/autoload.php';
 
-use Quill\Contracts\Request\RequestInterface;
-use Quill\Contracts\Response\ResponseInterface;
+$root = __DIR__;
+QuillFactory::useDefaultRoot($root);
 
-require_once __DIR__ . '/vendor/autoload.php';
+$app = QuillFactory::shared($root, [
+    'config' => [
+        'paths' => [$root . '/config'],
+    ],
+    'routes' => [
+        'paths' => [$root . '/routes'],
+    ],
+]);
 
-define('QUILL_START', microtime(true));
-
-$app = quill();
-
-$router = $app->router();
-
-$router->get('/', function (RequestInterface $req, ResponseInterface $res): ResponseInterface {
-    return $res->json(['execution_time' => microtime(true) - QUILL_START]);
-});
-
-$app->up();
+// optional helper, once the default root is set:
+$app = app();
 ```
 
-It is not necessary to specify the data types, it's a developer's decision.
+- `QuillFactory::make($root)` creates a fresh instance every call.
+- `QuillFactory::shared($root)` and the optional `app()` helper reuse the same container per root; call `QuillFactory::forget()` when you need a clean slate (tests, workers, etc.).
+- `QuillFactory::container($root)` exposes the bootstrapped DI container for advanced composition.
 
-At Quill, we consider it a good practice.
+## Routes
 
-## Knowing Features
-
-Today Quill has several features that facilitate API development tasks,
-and we want to add more in the near future.
-
-### Router
-
-It's possible to map routes with the following HTTP Methods
-
-```php
-use Quill\Contracts\Request\RequestInterface;
-use Quill\Contracts\Response\ResponseInterface;
-
-$router->get('/', fn (RequestInterface $req, ResponseInterface $res): ResponseInterface => $res->json([
-    'HTTP Method' => $req->psrRequest->getMethod()
-]));
-
-$router->post('/', fn (RequestInterface $req, ResponseInterface $res): ResponseInterface => $res->json([
-    'HTTP Method' => $req->psrRequest->getMethod()
-]));
-
-$router->put('/', fn (RequestInterface $req, ResponseInterface $res): ResponseInterface => $res->json([
-    'HTTP Method' => $req->psrRequest->getMethod()
-]));
-
-$router->patch('/', fn (RequestInterface $req, ResponseInterface $res): ResponseInterface => $res->json([
-    'HTTP Method' => $req->psrRequest->getMethod()
-]));
-
-$router->delete('/', fn (RequestInterface $req, ResponseInterface $res): ResponseInterface => $res->json([
-    'HTTP Method' => $req->psrRequest->getMethod()
-]));
-```
-
-### Recursive Groups
-
-In addition, it is possible to create groups of routes.
-
-As you will see below, it is also possible to create recursive groups.
+Routes live in PHP files that return a closure receiving the `RouterInterface`. Files found under the configured `routes.paths` are auto-loaded when `routes.auto` is true (default).
 
 ```php
 use Quill\Contracts\Router\RouterInterface;
-use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Response\ResponseInterface;
 
-$router->group('/api/', function (RouterInterface $router): void {
+return static function (RouterInterface $router): void {
+    $router->get('/health', static fn ($request, ResponseInterface $response) =>
+        $response->json(['status' => 'ok'])
+    );
 
-    $router->get('/foo', fn (RequestInterface $req, ResponseInterface $res): ResponseInterface => $res->json([
-        'URI' => $req->psrRequest->getUri()->getPath()
-    ]));
-
-    $router->group('/examples', function (RouterInterface $router) {
-
-        $router->get('/group-inside-group', fn(RequestInterface $req, ResponseInterface $res): ResponseInterface => $res->json([
-            'URI' => $req->psrRequest->getUri()->getPath()
-        ]));
-    });
-});
-```
-
-### Isolated Route Files
-
-For more convenience and easier readability of the code you can separate
-your groups / routes into separate files as you will see below
-
-With the help of the global function 'path()'
-it is easier to indicate where the 'examples.php' routes file is located.
-
-```php
-use Quill\Contracts\Router\RouterInterface;
-
-$router->group('/api/', function (RouterInterface $router): void {
-
-    $examplesRoutes = path()->routeFile('examples.php');
-    $router->loadRoutesFrom($examplesRoutes);
-});
-```
-
-The file '/routes/examples.php' looks like this
-
-```php
-<?php
-
-use Quill\Contracts\Request\RequestInterface;
-use Quill\Contracts\Response\ResponseInterface;
-use Quill\Contracts\Router\RouterInterface;
-
-return function (RouterInterface $router): void {
-    $router->group('/examples', function (RouterInterface $router) {
-
-        $router->get('/group-inside-group',
-            fn(RequestInterface $req, ResponseInterface $res): ResponseInterface => $res->json([
-                'URI' => $req->psrRequest->getUri()->getPath()
-            ])
-        );
-
-        $router->get('/another-route-inside-group',
-            fn(RequestInterface $req, ResponseInterface $res): ResponseInterface => $res->json([
-                'URI' => $req->psrRequest->getUri()->getPath()
-            ])
+    $router->group('/v1', static function (RouterInterface $router): void {
+        $router->post('/users', static fn ($request, ResponseInterface $response) =>
+            $response->json(['created' => true])->status(201)
         );
     });
 };
 ```
+
+- Supported verbs map directly to `RouterInterface::get|post|patch|put|delete` plus nested `group($prefix, $callback)` for reusable prefixes.
+- Closures are the canonical and documented route handler surface for this stabilized core. Other legacy targets may still exist internally, but they are not part of the public contract of this change.
+- Route callbacks receive the resolved `RequestInterface` and `ResponseInterface`. Middleware groups declared in config run before route execution; per-route middleware stacks can be assigned through the router API.
+
+## Requests & Responses
+
+- Requests wrap a PSR-7 `ServerRequestInterface`. The concrete `RequestInterface` supports helpers such as `->route('id')`, `->query('page')`, `->body('name')`, `->all()`, and the original PSR request via `->getPsrRequest()`.
+- Responses extend `Nyholm\Psr7\Response`. Convenience helpers include `json(array $data)`, `plain(string $text)`, `html(string $html)`, plus `code(HttpCode::OK)` / `status(int $code)` and fluent `headers([...])`.
+- Responses are dispatched by `ResponseSender`, so you can return any PSR-7 message as long as it implements `MessageInterface`.
+
+## Runtime Notes
+
+- The middleware pipeline, router, and container are internal, but PSR interfaces are used throughout: PSR-7 requests/responses (Nyholm implementation), PSR container bindings, and Nyholm streams.
+- Until a future follow-up change decouples the runtime, Nyholm components remain a mandatory dependency of the current core.
+
+## Current Limits
+
+- Bootstrapping still requires explicit filesystem roots for config/route discovery.
+- There are no global helpers such as `quill()` or `router()` anymore; stick to `QuillFactory` and the optional `app()` helper described above.

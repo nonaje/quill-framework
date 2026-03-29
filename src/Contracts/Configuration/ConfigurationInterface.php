@@ -42,4 +42,9 @@ interface ConfigurationInterface
      * @return self
      */
     public function push(string $key, mixed $value): ConfigurationInterface;
+
+    /**
+     * Merge one or more configuration repositories into the current repository.
+     */
+    public function merge(array ...$repositories): ConfigurationInterface;
 }

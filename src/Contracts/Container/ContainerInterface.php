@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Quill\Contracts\Container;
 
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Quill\Container\Exception\SingletonAlreadyRegisteredException;
 
 /**
@@ -13,8 +14,14 @@ use Quill\Container\Exception\SingletonAlreadyRegisteredException;
  * It extends the PSR-11 interface to include functionality for registering
  * singleton services that can be resolved once and cached for subsequent use.
  */
-interface ContainerInterface extends \Psr\Container\ContainerInterface
+interface ContainerInterface extends PsrContainerInterface
 {
+    /** @inheritDoc */
+    public function get(string $id): mixed;
+
+    /** @inheritDoc */
+    public function has(string $id): bool;
+
     public function register(string $id, callable $resolver): ContainerInterface;
 
     public function singleton(string $id, callable $resolver): ContainerInterface;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Quill\Request;
 
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Router\RouteInterface;
@@ -12,18 +13,23 @@ use Quill\Enums\RequestAttribute;
 
 class Request implements RequestInterface
 {
-    public function __construct(
-        public ServerRequestInterface $psrRequest {
-            get {
-                return $this->psrRequest;
-            }
-        }
-    ) {}
+    private ?array $cachedBodyInput = null;
+    private bool $bodyResolved = false;
+    private ?string $rawBody = null;
+
+    public function __construct(private readonly ServerRequestInterface $psrRequest)
+    {
+    }
+
+    public function getPsrRequest(): ServerRequestInterface
+    {
+        return $this->psrRequest;
+    }
 
     /** @ineritDoc */
     public function route(string $key, mixed $default = null): mixed
     {
-        return $this->getRoute()->params()[$key] ?? $default;
+        return $this->getRoute()->getParams()[$key] ?? $default;
     }
 
     private function getRoute(): RouteInterface
@@ -38,28 +44,91 @@ class Request implements RequestInterface
     }
 
     /** @ineritDoc */
-    public function all(): mixed
+    public function all(): array
     {
-        // TODO: Implement method
-
-        return [];
+        return array_replace_recursive($this->psrRequest->getQueryParams(), $this->body());
     }
 
     /** @ineritDoc */
     public function query(string $key, mixed $default = null): mixed
     {
-        // TODO: Implement method
-
-        $value = $default;
-
-        return $value;
+        return $this->psrRequest->getQueryParams()[$key] ?? $default;
     }
 
-    private function json(string $key, mixed $default): mixed
+    /** @ineritDoc */
+    public function body(?string $key = null, mixed $default = null): mixed
     {
-        $body = json_decode($this->psrRequest->getBody()->getContents(), true) ?? $default;
+        $payload = $this->resolveBodyPayload();
 
-        return $key ? ($body[$key] ?? $default) : $body;
+        if ($key === null) {
+            return $payload;
+        }
+
+        return $payload[$key] ?? $default;
+    }
+
+    private function resolveBodyPayload(): array
+    {
+        if ($this->bodyResolved) {
+            return $this->cachedBodyInput ?? [];
+        }
+
+        $parsedBody = $this->psrRequest->getParsedBody();
+
+        if (is_array($parsedBody) || is_object($parsedBody)) {
+            $this->cachedBodyInput = $this->normalizeBodyInput($parsedBody);
+            $this->bodyResolved = true;
+
+            return $this->cachedBodyInput;
+        }
+
+        $decoded = json_decode($this->getRawBody(), true);
+
+        $this->cachedBodyInput = is_array($decoded) ? $decoded : [];
+        $this->bodyResolved = true;
+
+        return $this->cachedBodyInput;
+    }
+
+    private function normalizeBodyInput(array|object $input): array
+    {
+        if (is_object($input)) {
+            $input = get_object_vars($input);
+        }
+
+        foreach ($input as $key => $value) {
+            if (is_array($value) || is_object($value)) {
+                $input[$key] = $this->normalizeBodyInput($value);
+            }
+        }
+
+        return $input;
+    }
+
+    private function getRawBody(): string
+    {
+        if ($this->rawBody !== null) {
+            return $this->rawBody;
+        }
+
+        $this->rawBody = $this->readBody($this->psrRequest->getBody());
+
+        return $this->rawBody;
+    }
+
+    private function readBody(StreamInterface $stream): string
+    {
+        if ($stream->isSeekable()) {
+            $stream->rewind();
+        }
+
+        $contents = $stream->getContents();
+
+        if ($stream->isSeekable()) {
+            $stream->rewind();
+        }
+
+        return $contents;
     }
 
     public function __call(string $name, array $arguments)

@@ -16,7 +16,7 @@ interface ResponseSenderInterface
      *
      * @param ResponseInterface $response
      *
-     * @return never
+     * @return void
      */
-    public function send(ResponseInterface $response): never;
+    public function send(ResponseInterface $response): void;
 }

@@ -43,3 +43,8 @@ function something()
 {
     // ..
 }
+
+function fixture_root(): string
+{
+    return realpath(__DIR__ . '/Fixtures/app');
+}

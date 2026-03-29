@@ -12,14 +12,40 @@ use Quill\Enums\Http\HttpMethod;
 
 class Route implements RouteInterface
 {
+    /** @param array<int, mixed> $middlewares */
     public function __construct(
-        protected(set) UriInterface $uri,
-        protected(set) HttpMethod $method,
-        protected(set) Closure|array|string $target,
-        protected(set) array $middlewares = [],
-        protected(set) array $params = [],
+        private readonly UriInterface $uri,
+        private readonly HttpMethod $method,
+        private readonly Closure|array|string $target,
+        private array $middlewares = [],
+        private array $params = [],
     ) {
         $this->assert();
+    }
+
+    public function getUri(): UriInterface
+    {
+        return $this->uri;
+    }
+
+    public function getMethod(): HttpMethod
+    {
+        return $this->method;
+    }
+
+    public function getTarget(): Closure|array|string
+    {
+        return $this->target;
+    }
+
+    public function getMiddlewares(): array
+    {
+        return $this->middlewares;
+    }
+
+    public function getParams(): array
+    {
+        return $this->params;
     }
 
     protected function assert(): void

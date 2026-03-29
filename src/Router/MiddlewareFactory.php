@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Quill\Router;
 
 use Closure;
@@ -18,6 +20,8 @@ class MiddlewareFactory implements MiddlewareFactoryInterface
     public function make(array|string|Closure|MiddlewareInterface $middleware): MiddlewareInterface
     {
         return match (true) {
+            $middleware instanceof MiddlewareInterface => $middleware,
+
             is_callable($middleware) => new ClosureMiddleware($this->container, $middleware),
 
             class_exists($middleware) => new StringClassMiddleware($this->container, $middleware),

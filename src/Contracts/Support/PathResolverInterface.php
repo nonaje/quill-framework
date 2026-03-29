@@ -12,5 +12,5 @@ interface PathResolverInterface
      * @param string $filename
      * @return string
      */
-    public function toFile(string $filename): string;
+    public function toFile(string $filename = ''): string;
 }

@@ -54,14 +54,11 @@ class RouteFinderMiddleware implements MiddlewareInterface
                 continue;
             }
 
-            // Clears registered routes to free up memory once a match is found
-            $this->router->clear();
-
             return new Route(
-                uri: $route->uri,
-                method: $route->method,
-                target: $route->target,
-                middlewares: $route->middlewares,
+                uri: $route->getUri(),
+                method: $route->getMethod(),
+                target: $route->getTarget(),
+                middlewares: $route->getMiddlewares(),
                 params: $params
             );
         }
@@ -81,42 +78,47 @@ class RouteFinderMiddleware implements MiddlewareInterface
      */
     private function resolveRoute(RouteInterface $route, ServerRequestInterface $request): array
     {
-        // Check if the HTTP method matches
-        if ($route->method->value !== strtoupper($request->getMethod())) {
+        if ($route->getMethod()->value !== strtoupper($request->getMethod())) {
             return [false, []];
         }
 
-        $routeParts = array_values(array_filter(explode('/', $route->uri->__toString())));
-        $wantedParts = array_values(array_filter(explode('/', $request->getUri()->getPath())));
+        $routeSegments = $this->normalizeSegments($route->getUri()->getPath());
+        $requestSegments = $this->normalizeSegments($request->getUri()->getPath());
 
-        // Check if the number of URI segments match
-        if (count($routeParts) !== count($wantedParts)) {
+        if (count($routeSegments) !== count($requestSegments)) {
             return [false, []];
         }
 
-        // Check for exact match
-        if (count(array_diff($routeParts, $wantedParts)) === 0) {
-            return [true, []];
-        }
-
-        // Check for parameterized match
-        $routeCandidateParams = [];
         $params = [];
-        foreach ($routeParts as $key => $part) {
-            $routeCandidateParams[$key] = $part;
-            $wantedPart = $wantedParts[$key];
 
-            if (str_starts_with($part, ':') && isset($wantedPart)) {
-                $routeCandidateParams[$key] = $wantedPart;
-                // Delete the ":" character
-                $params[substr($part, 1)] = $wantedPart;
+        foreach ($routeSegments as $index => $segment) {
+            $candidate = $requestSegments[$index];
+
+            if ($this->isParameterSegment($segment)) {
+                $params[substr($segment, 1)] = $candidate;
+                continue;
+            }
+
+            if ($segment !== $candidate) {
+                return [false, []];
             }
         }
 
-        if (count(array_diff($routeCandidateParams, $wantedParts)) === 0) {
-            return [true, $params];
-        }
+        return [true, $params];
+    }
 
-        return [false, []];
+    /**
+     * @return list<string>
+     */
+    private function normalizeSegments(string $path): array
+    {
+        $segments = array_values(array_filter(explode('/', $path), static fn (string $part): bool => $part !== ''));
+
+        return array_map(static fn (string $segment): string => rawurldecode($segment), $segments);
+    }
+
+    private function isParameterSegment(string $segment): bool
+    {
+        return str_starts_with($segment, ':') && strlen($segment) > 1;
     }
 }

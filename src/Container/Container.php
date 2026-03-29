@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Quill\Container;
 
-use Exception;
+use Quill\Container\Exception\CircularDependencyException;
 use Quill\Container\Exception\ServiceNotFoundException;
 use Quill\Container\Exception\SingletonAlreadyRegisteredException;
 use Quill\Contracts\Container\ContainerInterface;
@@ -12,54 +12,23 @@ use Quill\Contracts\Container\ContainerInterface;
 class Container implements ContainerInterface
 {
     /**
-     * The container instance
-     *
-     * @var ContainerInterface
-     */
-    protected static ContainerInterface $_instance;
-
-    /**
      * All registered bindings.
      *
      * @var array<string, Binding>
      */
     protected array $bindings = [];
 
-    /**
-     * Protected class constructor to prevent direct object creation.
-     */
-    protected function __construct()
-    {
-    }
+    /** @var list<string> */
+    private array $resolving = [];
 
-    /**
-     * To return new or existing Singleton instance of the class from which it is called.
-     * As it sets to final it can't be overridden.
-     *
-     * @return ContainerInterface Singleton instance of the class.
-     */
-    final public static function make(): ContainerInterface
+    public function __construct(private readonly ?ContainerInterface $parent = null)
     {
-        if (!isset(self::$_instance)) {
-            self::$_instance = new self();
-        }
-
-        return self::$_instance;
-    }
-
-    /**
-     * prevent from being unserialized (which would create a second instance of it)
-     * @throws Exception
-     */
-    final public function __wakeup()
-    {
-        throw new Exception('Cannot unserialize the container');
     }
 
     /** @inheritDoc */
     public function has(string $id): bool
     {
-        return isset($this->bindings[$id]);
+        return isset($this->bindings[$id]) || ($this->parent?->has($id) ?? false);
     }
 
     /** @inheritDoc */
@@ -94,18 +63,30 @@ class Container implements ContainerInterface
     /** @inheritDoc */
     public function get(string $id): mixed
     {
-        if (!isset($this->bindings[$id])) {
-            throw new ServiceNotFoundException($id);
+        if (isset($this->bindings[$id])) {
+            return $this->resolve($id);
         }
 
-        return $this->bindings[$id]->getInstance($this);
+        if ($this->parent) {
+            return $this->parent->get($id);
+        }
+
+        throw new ServiceNotFoundException($id);
     }
 
-    /**
-     * Prevent object cloning
-     */
-    private function __clone()
+    private function resolve(string $id): mixed
     {
+        if (in_array($id, $this->resolving, true)) {
+            throw new CircularDependencyException([...$this->resolving, $id]);
+        }
+
+        $this->resolving[] = $id;
+
+        try {
+            return $this->bindings[$id]->getInstance($this);
+        } finally {
+            array_pop($this->resolving);
+        }
     }
 
     /**
