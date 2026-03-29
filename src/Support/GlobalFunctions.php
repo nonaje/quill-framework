@@ -5,21 +5,27 @@ declare(strict_types=1);
 if (!function_exists('resolve')) {
     function resolve(string $id): mixed
     {
-        return \Quill\Container\Container::make()->get($id);
+        return \Quill\Factory\QuillFactory::container()->get($id);
     }
 }
 
 if (!function_exists('refresh')) {
     function refresh(string $id, callable $refreshed): mixed
     {
-        return \Quill\Container\Container::make()->refresh($id, $refreshed);
+        return \Quill\Factory\QuillFactory::container()->refresh($id, $refreshed);
     }
 }
 
 if (!function_exists('app')) {
-    function app(string $appRoot = ''): \Quill\Contracts\ApplicationInterface|\Quill\Contracts\Router\RouterInterface
+    function app(string $appRoot = ''): \Quill\Contracts\ApplicationInterface
     {
-        return \Quill\Quill::make(\Quill\Container\Container::make(), $appRoot);
+        if ($appRoot !== '') {
+            \Quill\Factory\QuillFactory::useDefaultRoot($appRoot);
+
+            return \Quill\Factory\QuillFactory::shared($appRoot);
+        }
+
+        return \Quill\Factory\QuillFactory::shared();
     }
 }
 
@@ -55,14 +61,14 @@ if (!function_exists('config')) {
 if (! function_exists('routes')) {
     function routes(string $path): mixed
     {
-        return app()->get(\Quill\Contracts\Support\PathResolverInterface::class)->toFile("routes/$path");
+        return \Quill\Factory\QuillFactory::container()->get(\Quill\Contracts\Support\PathResolverInterface::class)->toFile("routes/$path");
     }
 }
 
 if (! function_exists('file_path')) {
     function file_path(string $path): mixed
     {
-        return app()->get(\Quill\Contracts\Support\PathResolverInterface::class)->toFile("$path");
+        return \Quill\Factory\QuillFactory::container()->get(\Quill\Contracts\Support\PathResolverInterface::class)->toFile("$path");
     }
 }
 

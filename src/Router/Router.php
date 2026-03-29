@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Quill\Router;
 
 use Closure;
@@ -8,29 +10,34 @@ use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Middleware\MiddlewareFactoryInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Contracts\Router\RouterInterface;
+use Quill\Contracts\Router\RouteStoreInterface;
 use Quill\Enums\Http\HttpMethod;
 
 class Router implements RouterInterface
 {
     public const string PATH_SEPARATOR = '/';
 
-    /** @var RouteInterface[] $routes */
-    protected array $routes = [];
-
     protected array $groupPrefixStack = [];
 
     protected array $groupMiddlewareStack = [];
 
-    public function __construct(protected MiddlewareFactoryInterface $middlewareFactory) { }
+    private RouteStoreInterface $routeStore;
+
+    public function __construct(protected MiddlewareFactoryInterface $middlewareFactory)
+    {
+        $this->routeStore = new RouteStore();
+    }
 
     public function routes(): array
     {
-        return $this->routes;
+        return $this->routeStore->all();
     }
 
     public function clear(): void
     {
-        $this->routes = [];
+        $this->routeStore->clear();
+        $this->groupPrefixStack = [];
+        $this->groupMiddlewareStack = [];
     }
 
     public function group(string $prefix, Closure $routes, array $middlewares = []): void
@@ -87,15 +94,17 @@ class Router implements RouterInterface
     {
         $middlewares = array_map(
             fn (array|string|Closure|MiddlewareInterface $middleware) => $this->middlewareFactory->make($middleware),
-            array: $middlewares
+            array: array_flatten([...$this->groupMiddlewareStack, $middlewares])
         );
 
-        $this->routes[] = new Route(
-            uri: new Uri($this->groupPrefix() . $this->normalizePath($uri)),
+        $route = new Route(
+            uri: new Uri($this->fullPathFor($uri)),
             method: $method,
             target: $target,
             middlewares: $middlewares
         );
+
+        $this->routeStore->add($route);
     }
 
     protected function normalizePath(string $path): string
@@ -103,10 +112,23 @@ class Router implements RouterInterface
         return self::PATH_SEPARATOR . trim($path, self::PATH_SEPARATOR);
     }
 
+    private function fullPathFor(string $uri): string
+    {
+        $path = $this->groupPrefix() . $this->normalizePath($uri);
+        $normalized = rtrim($path, self::PATH_SEPARATOR);
+
+        return $normalized === '' ? self::PATH_SEPARATOR : $normalized;
+    }
+
     protected function groupPrefix(): string
     {
-        return $this->groupPrefixStack
-            ? self::PATH_SEPARATOR . implode(self::PATH_SEPARATOR, $this->groupPrefixStack)
+        $prefixes = array_values(array_filter(
+            $this->groupPrefixStack,
+            static fn (string $prefix): bool => $prefix !== ''
+        ));
+
+        return $prefixes
+            ? self::PATH_SEPARATOR . implode(self::PATH_SEPARATOR, $prefixes)
             : '';
     }
 }

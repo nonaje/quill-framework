@@ -26,7 +26,7 @@ final class RequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): PsrResponseInterface
     {
-        /** @var ResponseInterface|null $response */
+        /** @var ResponseInterface $response */
         $response = ($this->resolveRouteTarget($request))();
 
         return $response;
@@ -34,8 +34,9 @@ final class RequestHandler implements RequestHandlerInterface
 
     private function resolveRouteTarget(ServerRequestInterface $request): callable
     {
+        /** @var RouteInterface $route */
         $route = $request->getAttribute(RequestAttribute::ROUTE->value);
-        $target = $route->target;
+        $target = $route->getTarget();
 
         return match (true) {
             is_string($target) => $this->resolveStringTarget($request),
@@ -45,35 +46,39 @@ final class RequestHandler implements RequestHandlerInterface
         };
     }
 
-    private function resolveStringTarget(\Psr\Http\Message\RequestInterface $request): callable
+    private function resolveStringTarget(ServerRequestInterface $request): callable
     {
         /** @var RouteInterface $route */
         $route = $request->getAttribute(RequestAttribute::ROUTE->value);
-        $toResolve = explode('@', $route->target);
+        $toResolve = explode('@', (string) $route->getTarget());
         $controller = $toResolve[0];
         $method = $toResolve[1] ?? '__invoke';
+        $quillRequest = new Request($request);
         $response = $this->container->get(ResponseInterface::class);
 
-        return fn() => new $controller($request, $response, $route->params)->{$method}();
+        return fn() => new $controller($this->container, $quillRequest, $response)->{$method}(...array_values($route->getParams()));
     }
 
-    private function resolveArrayTarget(\Psr\Http\Message\RequestInterface $request): callable
+    private function resolveArrayTarget(ServerRequestInterface $request): callable
     {
         /** @var RouteInterface $route */
         $route = $request->getAttribute(RequestAttribute::ROUTE->value);
-        $controller = $route->target[0];
-        $method = $route->target[1] ?? '__invoke';
+        $target = $route->getTarget();
+        $controller = $target[0];
+        $method = $target[1] ?? '__invoke';
+        $quillRequest = new Request($request);
         $response = $this->container->get(ResponseInterface::class);
 
-        return fn() => new $controller($request, $response, $route->params)->{$method}();
+        return fn() => new $controller($this->container, $quillRequest, $response)->{$method}(...array_values($route->getParams()));
     }
 
-    private function resolveCallableTarget(\Psr\Http\Message\RequestInterface $request): callable
+    private function resolveCallableTarget(ServerRequestInterface $request): callable
     {
         /** @var RouteInterface $route */
         $route = $request->getAttribute(RequestAttribute::ROUTE->value);
+        $quillRequest = new Request($request);
         $response = $this->container->get(ResponseInterface::class);
 
-        return fn() => ($route->target)($request, $response, $route->params);
+        return fn() => ($route->getTarget())($quillRequest, $response, $route->getParams());
     }
 }

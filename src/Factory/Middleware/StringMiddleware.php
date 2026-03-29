@@ -13,36 +13,36 @@ use Quill\Contracts\Container\ContainerInterface;
 
 final readonly class StringMiddleware implements MiddlewareInterface
 {
-    private MiddlewareInterface $middleware;
+    private MiddlewareInterface $resolved;
 
-    public function __construct(private readonly ContainerInterface $container, string $middleware)
+    public function __construct(private readonly ContainerInterface $container, private string $alias)
     {
-        $this->assert($middleware);
+        $this->resolved = $this->resolveAlias();
     }
 
-    private function assert(string $middleware): void
+    private function resolveAlias(): MiddlewareInterface
     {
-        $target = config("app.middlewares.$middleware", false);
+        $target = config("app.middlewares.$this->alias", false);
 
-        if (false === $target) {
-            throw new LogicException("Middleware: '$this->middleware' is not registered in app config");
+        if ($target === false) {
+            throw new LogicException("Middleware alias '{$this->alias}' is not registered in app config");
         }
 
         if (is_callable($target)) {
-            $this->middleware = new ClosureMiddleware($this->container, $target);
-            return;
+            return new ClosureMiddleware($this->container, $target);
         }
 
-        if (class_exists($target) && is_a($target, MiddlewareInterface::class, true)) {
-            $this->middleware = new $target($this->container);
-            return;
+        if (is_string($target) && class_exists($target) && is_a($target, MiddlewareInterface::class, true)) {
+            return new $target($this->container);
         }
 
-        throw new LogicException("Middleware: '{$this->middleware}' must implement MiddlewareInterface or be a closure");
+        throw new LogicException(
+            "Middleware alias '{$this->alias}' must reference a Closure or a MiddlewareInterface implementation"
+        );
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        return $this->middleware->process($request, $handler);
+        return $this->resolved->process($request, $handler);
     }
 }

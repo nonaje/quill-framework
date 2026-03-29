@@ -4,14 +4,22 @@ declare(strict_types=1);
 
 namespace Quill\Contracts;
 
+use Closure;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Quill\Contracts\Container\ContainerInterface;
+use Quill\Contracts\Router\RouterInterface;
 
-interface ApplicationInterface
+interface ApplicationInterface extends RouterInterface, RequestHandlerInterface
 {
-    public protected(set) ContainerInterface $container { get; set; }
+    public function container(): ContainerInterface;
 
-    public protected(set) bool $isProduction { get; set; }
+    public function router(): RouterInterface;
 
-    public function processRequest(ServerRequestInterface $request): never;
+    public function isProduction(): bool;
+
+    public function use(string|array|Closure|MiddlewareInterface $middleware): static;
+
+    public function processRequest(ServerRequestInterface $request): void;
 }

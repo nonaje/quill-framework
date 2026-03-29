@@ -69,7 +69,33 @@ class Response extends PsrResponse implements ResponseInterface
 
     public function code(HttpCode $code): self
     {
-        return $this->withStatus($code->value);
+        return $this->status($code);
+    }
+
+    public function status(HttpCode|int $code, string $reason = ''): self
+    {
+        $statusCode = $code instanceof HttpCode ? $code->value : $code;
+
+        return $reason === ''
+            ? $this->withStatus($statusCode)
+            : $this->withStatus($statusCode, $reason);
+    }
+
+    public function headers(array $headers): self
+    {
+        $response = $this;
+
+        foreach ($headers as $name => $value) {
+            if (!is_string($name)) {
+                continue;
+            }
+
+            $response = is_array($value)
+                ? $response->withHeader($name, array_map(static fn ($item) => (string) $item, $value))
+                : $response->withHeader($name, (string) $value);
+        }
+
+        return $response;
     }
 
     private function body(string $content, MimeType $mime): self
@@ -77,7 +103,7 @@ class Response extends PsrResponse implements ResponseInterface
         $stream = Stream::create($content);
 
         return $this
-            ->withHeader(HttpHeader::CONTENT_TYPE->value, $mime->value)
+            ->withHeader(HttpHeader::CONTENT_TYPE->value, $mime->value . '; charset=utf-8')
             ->withBody($stream);
     }
 }

@@ -20,12 +20,6 @@ final readonly class StringClassMiddleware implements MiddlewareInterface
 
     private function assert(): void
     {
-        $registeredMiddlewares = config('app.middlewares', []);
-        $middlewareIsNotRegistered = !in_array($this->middleware, $registeredMiddlewares);
-        if ($middlewareIsNotRegistered) {
-            throw new LogicException("Middleware: '{$this->middleware}' is not registered in app config");
-        }
-
         $isNotInstanceOfMiddlewareInterface = !is_a($this->middleware, MiddlewareInterface::class, true);
         if ($isNotInstanceOfMiddlewareInterface) {
             throw new LogicException("Middleware: '{$this->middleware}' must implement MiddlewareInterface");

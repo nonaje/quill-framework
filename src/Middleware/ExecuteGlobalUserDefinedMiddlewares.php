@@ -15,8 +15,14 @@ class ExecuteGlobalUserDefinedMiddlewares implements MiddlewareInterface
 {
     public function __construct(
         protected MiddlewarePipelineInterface $pipeline,
-        protected(set) MiddlewareStoreInterface $middlewares
-    ) { }
+        private readonly MiddlewareStoreInterface $middlewares
+    ) {
+    }
+
+    public function middlewareStore(): MiddlewareStoreInterface
+    {
+        return $this->middlewares;
+    }
 
     /**
      * Processes the global user defined middlewares

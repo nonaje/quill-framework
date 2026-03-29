@@ -10,7 +10,6 @@ use Quill\Contracts\Configuration\ConfigurationInterface;
 use Quill\Contracts\Container\ContainerInterface;
 use Quill\Contracts\Loader\FilesLoader;
 use Quill\Contracts\Support\PathResolverInterface;
-use Quill\Support\Path;
 
 /**
  * Loads environment variables from .env files into application configuration
@@ -112,6 +111,6 @@ final readonly class DotEnvLoader implements FilesLoader
 
         /** @var ConfigurationInterface $config */
         $config = $this->container->get(ConfigurationInterface::class);
-        $config->put('env', $normalizedVariables);
+        $config->merge(['env' => $normalizedVariables]);
     }
 }

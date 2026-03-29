@@ -11,9 +11,11 @@ class Config implements ConfigurationInterface
 {
     use DotNotationParser;
 
-    private array $items = [];
+    public function __construct(private array $items = [])
+    {
+    }
 
-    /** @ineritDoc */
+    /** @inheritDoc */
     public function all(): array
     {
         return $this->items;
@@ -22,41 +24,59 @@ class Config implements ConfigurationInterface
     /** @inheritDoc */
     public function get(string $key, mixed $default = null): mixed
     {
-        foreach ($this->dotNotationToArray($key) as $key) {
-            $value = $this->items[$key] ?? $value[$key] ?? null;
+        $segments = $this->dotNotationToArray($key);
 
-            if (is_null($value)) {
-                return $default;
-            }
+        if ($segments === []) {
+            return $default;
         }
 
-        return $value ?? $default;
+        $value = $this->items;
+
+        foreach ($segments as $segment) {
+            if (is_array($value) && array_key_exists($segment, $value)) {
+                $value = $value[$segment];
+                continue;
+            }
+
+            return $default;
+        }
+
+        return $value;
     }
 
     /** @inheritDoc */
     public function push(string $key, mixed $value): ConfigurationInterface
     {
-        $items = &$this->items;
+        $segments = $this->dotNotationToArray($key);
 
-        foreach ($this->dotNotationToArray($key) as $key) {
-            if (!isset($items[$key])) {
-                $items[$key] = null;
+        if ($segments === []) {
+            return $this;
+        }
+
+        $items = &$this->items;
+        $lastSegment = array_pop($segments);
+
+        if ($lastSegment === null) {
+            return $this;
+        }
+
+        foreach ($segments as $segment) {
+            if (!isset($items[$segment]) || !is_array($items[$segment])) {
+                $items[$segment] = [];
             }
 
-            $items = &$items[$key];
+            $items = &$items[$segment];
         }
 
-        if (is_null($items)) {
-            $items = $value;
-            return $this;
+        if (!isset($items[$lastSegment])) {
+            $items[$lastSegment] = [];
         }
 
-        if (is_array($items)) {
-            $items[] = $value;
-            return $this;
+        if (!is_array($items[$lastSegment])) {
+            $items[$lastSegment] = [$items[$lastSegment]];
         }
 
-        $items = [$items, $value];
+        $items[$lastSegment][] = $value;
 
         return $this;
     }
@@ -64,18 +84,57 @@ class Config implements ConfigurationInterface
     /** @inheritDoc */
     public function put(string $key, mixed $value): ConfigurationInterface
     {
-        $items = &$this->items;
+        $segments = $this->dotNotationToArray($key);
 
-        foreach ($this->dotNotationToArray($key) as $key) {
-            if (!isset($items[$key]) || !is_array($items[$key])) {
-                $items[$key] = [];
-            }
-
-            $items = &$items[$key];
+        if ($segments === []) {
+            return $this;
         }
 
-        $items = $value;
+        $items = &$this->items;
+        $lastSegment = array_pop($segments);
+
+        if ($lastSegment === null) {
+            return $this;
+        }
+
+        foreach ($segments as $segment) {
+            if (!isset($items[$segment]) || !is_array($items[$segment])) {
+                $items[$segment] = [];
+            }
+
+            $items = &$items[$segment];
+        }
+
+        $items[$lastSegment] = $value;
 
         return $this;
+    }
+
+    /** @inheritDoc */
+    public function merge(array ...$repositories): ConfigurationInterface
+    {
+        foreach ($repositories as $repository) {
+            if ($repository === []) {
+                continue;
+            }
+
+            $this->items = $this->mergeRecursive($this->items, $repository);
+        }
+
+        return $this;
+    }
+
+    private function mergeRecursive(array $base, array $override): array
+    {
+        foreach ($override as $key => $value) {
+            if (is_array($value) && isset($base[$key]) && is_array($base[$key])) {
+                $base[$key] = $this->mergeRecursive($base[$key], $value);
+                continue;
+            }
+
+            $base[$key] = $value;
+        }
+
+        return $base;
     }
 }

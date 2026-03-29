@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Quill\Handler\Error;
 
 use ErrorException;
+use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Quill\Contracts\ErrorHandler\ErrorHandlerInterface;
@@ -14,7 +15,7 @@ use Quill\Enums\Http\HttpCode;
 use Quill\Enums\RequestAttribute;
 use Throwable;
 
-abstract class ErrorHandler implements ErrorHandlerInterface
+abstract class ErrorHandler implements ErrorHandlerInterface, RequestHandlerInterface
 {
     public bool $displayErrors = true;
 
@@ -37,6 +38,19 @@ abstract class ErrorHandler implements ErrorHandlerInterface
 
     /** @ineritDoc */
     abstract protected function toResponse(): ResponseInterface;
+
+    public function handle(ServerRequestInterface $request): PsrResponseInterface
+    {
+        $error = $request->getAttribute(RequestAttribute::ERROR->value);
+
+        if (! $error instanceof Throwable) {
+            $error = new ErrorException('An internal server error occurred.', HttpCode::INTERNAL_SERVER_ERROR->value);
+        }
+
+        $this->error = $error;
+
+        return $this->toResponse();
+    }
 
     public function handleError(int $errno, string $errstr, string $errfile = '', int $errline = 0): never
     {

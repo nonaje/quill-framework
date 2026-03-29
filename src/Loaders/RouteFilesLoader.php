@@ -9,7 +9,6 @@ use Quill\Contracts\Container\ContainerInterface;
 use Quill\Contracts\Loader\FilesLoader;
 use Quill\Contracts\Router\RouterInterface;
 use Quill\Contracts\Support\PathResolverInterface;
-use Quill\Support\Path;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 

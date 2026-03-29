@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Quill\Support;
 
 /**
@@ -15,8 +17,14 @@ trait DotNotationParser
      */
     protected function dotNotationToArray(string $notation): array
     {
-        return array_values(
-            array_filter(explode('.', strtolower($notation)))
-        );
+        $notation = trim($notation);
+
+        if ($notation === '') {
+            return [];
+        }
+
+        $segments = array_map('trim', explode('.', $notation));
+
+        return array_values(array_filter($segments, static fn(string $segment) => $segment !== ''));
     }
 }

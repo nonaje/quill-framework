@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Quill\Factory\Psr7;
 
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -13,6 +15,10 @@ class ResponseFactory implements ResponseFactoryInterface
      */
     public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
     {
-        return new Response();
+        $response = new Response();
+
+        return $reasonPhrase === ''
+            ? $response->withStatus($code)
+            : $response->withStatus($code, $reasonPhrase);
     }
 }
