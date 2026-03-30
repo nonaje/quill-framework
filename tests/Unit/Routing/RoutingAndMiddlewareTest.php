@@ -18,7 +18,8 @@ beforeEach(function (): void {
 });
 
 test('router preserves its registry between dispatches', function (): void {
-    $app = QuillFactory::make(fixture_root());
+    $root = fixture_root();
+    $app = QuillFactory::make($root, framework_options($root));
     $app->get('/ping', function (RequestInterface $request, ResponseInterface $response): ResponseInterface {
         return $response->code(HttpCode::OK)->json(['pong' => true]);
     });
@@ -32,7 +33,8 @@ test('router preserves its registry between dispatches', function (): void {
 });
 
 test('router matches named parameters deterministically', function (): void {
-    $app = QuillFactory::make(fixture_root());
+    $root = fixture_root();
+    $app = QuillFactory::make($root, framework_options($root));
     $app->get('/users/:user/books/:book', function (RequestInterface $request, ResponseInterface $response): ResponseInterface {
         return $response->code(HttpCode::OK)->json([
             'user' => $request->route('user'),
@@ -49,7 +51,8 @@ test('router matches named parameters deterministically', function (): void {
 });
 
 test('duplicate routes for the same method and path throw a logic exception', function (): void {
-    $app = QuillFactory::make(fixture_root());
+    $root = fixture_root();
+    $app = QuillFactory::make($root, framework_options($root));
     $app->get('/ping', function (RequestInterface $request, ResponseInterface $response): ResponseInterface {
         return $response->code(HttpCode::OK)->json(['pong' => true]);
     });
@@ -60,7 +63,8 @@ test('duplicate routes for the same method and path throw a logic exception', fu
 });
 
 test('nested group middlewares execute in order before the route handler', function (): void {
-    $app = QuillFactory::make(fixture_root());
+    $root = fixture_root();
+    $app = QuillFactory::make($root, framework_options($root));
 
     $middleware = static function (string $label): Closure {
         return static function (
@@ -96,7 +100,8 @@ test('nested group middlewares execute in order before the route handler', funct
 });
 
 test('middlewares can short circuit the pipeline', function (): void {
-    $app = QuillFactory::make(fixture_root());
+    $root = fixture_root();
+    $app = QuillFactory::make($root, framework_options($root));
 
     $routeInvoked = false;
     $middlewareInvoked = false;
@@ -129,7 +134,8 @@ test('middlewares can short circuit the pipeline', function (): void {
 });
 
 test('unhandled exceptions are converted into json error responses', function (): void {
-    $app = QuillFactory::make(fixture_root());
+    $root = fixture_root();
+    $app = QuillFactory::make($root, framework_options($root));
 
     $app->get('/explode', function (): never {
         throw new RuntimeException('boom');
@@ -145,13 +151,14 @@ test('unhandled exceptions are converted into json error responses', function ()
 });
 
 test('error responses hide debug details in production', function (): void {
-    $app = QuillFactory::make(fixture_root(), [
+    $root = fixture_root();
+    $app = QuillFactory::make($root, framework_options($root, [
         'config' => [
             'overrides' => [
                 'env' => ['app_env' => 'production'],
             ],
         ],
-    ]);
+    ]));
 
     $app->get('/boom', function (): never {
         throw new RuntimeException('explode');

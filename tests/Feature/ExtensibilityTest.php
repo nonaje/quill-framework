@@ -16,9 +16,11 @@ beforeEach(function (): void {
 });
 
 test('applications can register routes and handle requests without global helpers', function (): void {
-    $app = QuillFactory::make(fixture_root(), [
-        'routes' => ['auto' => false],
-    ]);
+    $root = fixture_root();
+
+    $app = QuillFactory::make($root, framework_options($root, [
+        'routes' => ['paths' => []],
+    ]));
 
     $app->get('/health', function (RequestInterface $request, ResponseInterface $response): ResponseInterface {
         return $response->status(HttpCode::OK)->json(['ok' => true]);
@@ -32,7 +34,9 @@ test('applications can register routes and handle requests without global helper
 });
 
 test('service overrides stay isolated per application instance', function (): void {
-    $customApp = QuillFactory::make(fixture_root(), [
+    $root = fixture_root();
+
+    $customApp = QuillFactory::make($root, framework_options($root, [
         'singletons' => [
             ErrorHandlerInterface::class => static fn (ContainerInterface $container): ErrorHandlerInterface => new class(
                 $container->get(ResponseInterface::class),
@@ -47,9 +51,9 @@ test('service overrides stay isolated per application instance', function (): vo
                 }
             },
         ],
-    ]);
+    ]));
 
-    $defaultApp = QuillFactory::make(fixture_root());
+    $defaultApp = QuillFactory::make($root, framework_options($root));
 
     foreach ([$customApp, $defaultApp] as $app) {
         $app->get('/explode', function (): never {
@@ -65,6 +69,8 @@ test('service overrides stay isolated per application instance', function (): vo
 });
 
 test('response sender overrides stay isolated per application instance', function (): void {
+    $root = fixture_root();
+
     $firstProbe = new class {
         public int $calls = 0;
         public array $statuses = [];
@@ -75,7 +81,7 @@ test('response sender overrides stay isolated per application instance', functio
         public array $statuses = [];
     };
 
-    $firstApp = QuillFactory::make(fixture_root(), [
+    $firstApp = QuillFactory::make($root, framework_options($root, [
         'singletons' => [
             ResponseSenderInterface::class => static fn () => new class($firstProbe) implements ResponseSenderInterface {
                 public function __construct(private object $probe)
@@ -89,10 +95,10 @@ test('response sender overrides stay isolated per application instance', functio
                 }
             },
         ],
-        'routes' => ['auto' => false],
-    ]);
+        'routes' => ['paths' => []],
+    ]));
 
-    $secondApp = QuillFactory::make(fixture_root(), [
+    $secondApp = QuillFactory::make($root, framework_options($root, [
         'singletons' => [
             ResponseSenderInterface::class => static fn () => new class($secondProbe) implements ResponseSenderInterface {
                 public function __construct(private object $probe)
@@ -106,8 +112,8 @@ test('response sender overrides stay isolated per application instance', functio
                 }
             },
         ],
-        'routes' => ['auto' => false],
-    ]);
+        'routes' => ['paths' => []],
+    ]));
 
     foreach ([$firstApp, $secondApp] as $app) {
         $app->get('/health', function (RequestInterface $request, ResponseInterface $response): ResponseInterface {
