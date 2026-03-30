@@ -1,11 +1,15 @@
 ## ADDED Requirements
 
 ### Requirement: Canonical application bootstrap
-Quill SHALL exponer un punto de arranque canonico que reciba el `app root`, construya la aplicacion completa y devuelva una instancia lista para registrar rutas, resolver servicios y procesar requests.
+Quill SHALL exponer un bootstrap canonico puramente programatico que reciba el `app root`, parametros declarados por la aplicacion y construya la instancia completa sin depender de convenciones del starter app empaquetado.
 
 #### Scenario: Build application from app root
-- **WHEN** un desarrollador crea la aplicacion desde el bootstrap canonico indicando el directorio raiz
-- **THEN** Quill devuelve una instancia operable con contenedor, configuracion, routing, manejo de errores y response runtime ya preparados
+- **WHEN** un desarrollador crea la aplicacion desde el bootstrap canonico indicando el directorio raiz y su configuracion declarativa
+- **THEN** Quill devuelve una instancia operable con contenedor, configuracion, routing, manejo de errores y response runtime ya preparados sin requerir archivos particulares del starter app
+
+#### Scenario: Provide custom starter conventions
+- **WHEN** una aplicacion define su propio script de arranque o convenciones de carpetas diferentes al starter empaquetado
+- **THEN** el bootstrap canonico acepta esos parametros y produce la misma instancia lista para registrar rutas, servicios y middlewares
 
 ### Requirement: Extensible composition root
 Quill MUST permitir que el usuario reemplace servicios por defecto durante el bootstrap usando hooks o bindings documentados, sin modificar el codigo interno del framework.
