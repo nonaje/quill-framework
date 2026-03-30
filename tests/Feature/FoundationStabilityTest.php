@@ -44,7 +44,7 @@ return [
 PHP,
     ]);
 
-    QuillFactory::make($root, [
+    QuillFactory::shared($root, framework_options($root, [
         'config' => [
             'defaults' => [
                 'app' => [
@@ -65,7 +65,7 @@ PHP,
                 ],
             ],
         ],
-    ]);
+    ]));
 
     $container = QuillFactory::container($root);
     $config = $container->get(ConfigurationInterface::class);
@@ -107,11 +107,11 @@ return static function (RouterInterface $router): void {
 PHP,
     ]);
 
-    $app = QuillFactory::make($root, [
+    $app = QuillFactory::shared($root, framework_options($root, [
         'config' => [
-            'load_dotenv' => false,
+            'env_paths' => [],
         ],
-    ]);
+    ]));
 
     $response = $app->handle(new ServerRequest('GET', '/api/v1/health/core'));
     $payload = json_decode((string) $response->getBody(), true);

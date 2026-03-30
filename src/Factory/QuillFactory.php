@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Quill\Factory;
 
 use InvalidArgumentException;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Quill\Configuration\Config;
 use Quill\Container\Container;
 use Quill\Contracts\ApplicationInterface;
@@ -13,6 +14,8 @@ use Quill\Contracts\Container\ContainerInterface;
 use Quill\Contracts\ErrorHandler\ErrorHandlerInterface;
 use Quill\Contracts\Middleware\MiddlewareFactoryInterface;
 use Quill\Contracts\Middleware\MiddlewarePipelineInterface;
+use Quill\Contracts\Request\RequestFactoryInterface;
+use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Response\ResponseSenderInterface;
 use Quill\Contracts\Router\MiddlewareStoreInterface;
@@ -28,8 +31,9 @@ use Quill\Loaders\RouteFilesLoader;
 use Quill\Middleware\ExecuteGlobalUserDefinedMiddlewares;
 use Quill\Middleware\ExecuteRouteMiddlewares;
 use Quill\Middleware\RouteFinderMiddleware;
-use Quill\Response\Response;
 use Quill\Response\ResponseSender;
+use Quill\Factory\Psr7\ResponseFactory as QuillResponseFactory;
+use Quill\Request\RequestFactory as QuillRequestFactory;
 use Quill\Router\MiddlewareFactory;
 use Quill\Router\MiddlewareStore;
 use Quill\Router\Router;
@@ -157,7 +161,9 @@ final class QuillFactory
         $container->singleton(ContainerInterface::class, static fn () => $container);
         $container->singleton(PathResolverInterface::class, static fn () => new Path($appRoot));
         $container->singleton(ConfigurationInterface::class, static fn () => new Config($defaults));
-        $container->singleton(ResponseInterface::class, static fn () => new Response());
+        $container->singleton(ResponseFactoryInterface::class, static fn () => new QuillResponseFactory());
+        $container->singleton(ResponseInterface::class, static fn (ContainerInterface $container) => $container->get(ResponseFactoryInterface::class)->createResponse());
+        $container->singleton(RequestFactoryInterface::class, static fn () => new QuillRequestFactory());
     }
 
     private static function registerRuntimeBindings(Container $container): void
@@ -192,18 +198,14 @@ final class QuillFactory
         /** @var ConfigurationInterface $config */
         $config = $container->get(ConfigurationInterface::class);
 
-        $paths = $options['paths'] ?? [];
-        (new ConfigurationFilesLoader($container))->load(...$paths);
+        $paths = self::stringPaths($options['paths'] ?? []);
+        if ($paths !== []) {
+            (new ConfigurationFilesLoader($container))->load(...$paths);
+        }
 
-        if (($options['load_dotenv'] ?? true) !== false) {
-            $loader = new DotEnvLoader($container);
-            $envFile = $options['env_file'] ?? null;
-
-            if (is_string($envFile) && $envFile !== '') {
-                $loader->load($envFile);
-            } else {
-                $loader->load();
-            }
+        $envPaths = self::stringPaths($options['env_paths'] ?? []);
+        if ($envPaths !== []) {
+            (new DotEnvLoader($container))->load(...$envPaths);
         }
 
         if (!empty($options['overrides'])) {
@@ -213,12 +215,45 @@ final class QuillFactory
 
     private static function bootstrapRoutes(ContainerInterface $container, array $options): void
     {
-        if (($options['auto'] ?? true) === false) {
+        $paths = self::stringPaths($options['paths'] ?? []);
+
+        if ($paths === []) {
             return;
         }
 
-        $paths = $options['paths'] ?? [];
         (new RouteFilesLoader($container))->load(...$paths);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function stringPaths(mixed $candidates): array
+    {
+        if (is_string($candidates)) {
+            $candidates = [$candidates];
+        }
+
+        if (!is_array($candidates)) {
+            return [];
+        }
+
+        $paths = [];
+
+        foreach ($candidates as $candidate) {
+            if (!is_string($candidate)) {
+                continue;
+            }
+
+            $candidate = trim($candidate);
+
+            if ($candidate === '') {
+                continue;
+            }
+
+            $paths[] = $candidate;
+        }
+
+        return array_values(array_unique($paths));
     }
 
     private static function normalizeRoot(string $appRoot): string

@@ -39,12 +39,22 @@
 |
 */
 
-function something()
-{
-    // ..
-}
-
 function fixture_root(): string
 {
     return realpath(__DIR__ . '/Fixtures/app');
+}
+
+function framework_options(string $root, array $options = []): array
+{
+    $defaults = [
+        'config' => [
+            'paths' => [$root . '/config'],
+            'env_paths' => [$root . '/.env'],
+        ],
+        'routes' => [
+            'paths' => [$root . '/routes'],
+        ],
+    ];
+
+    return array_replace_recursive($defaults, $options);
 }

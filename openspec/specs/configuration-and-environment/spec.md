@@ -27,3 +27,10 @@ Quill MUST normalizar valores de `.env` para representar de forma consistente st
 #### Scenario: Load optional env file
 - **WHEN** el archivo `.env` esperado no existe para una aplicacion
 - **THEN** el bootstrap continua sin error y conserva los valores disponibles desde otras fuentes
+
+### Requirement: Optional starter file conventions
+Quill SHALL documentar que archivos como `config/*.php`, definiciones de rutas o `.env` provienen del starter app y no constituyen contratos obligatorios del framework.
+
+#### Scenario: Provide alternative configuration sources
+- **WHEN** una aplicacion declara rutas y configuracion mediante archivos o proveedores diferentes a los nombrados por el starter
+- **THEN** Quill mantiene el mismo comportamiento de resolucion y precedencia siempre que la aplicacion entregue los valores por las interfaces soportadas

@@ -14,7 +14,6 @@ use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Router\RouteInterface;
 use Quill\Enums\RequestAttribute;
-use Quill\Request\Request;
 use Quill\Router\Route;
 
 final class RequestHandler implements RequestHandlerInterface
@@ -53,7 +52,7 @@ final class RequestHandler implements RequestHandlerInterface
         $toResolve = explode('@', (string) $route->getTarget());
         $controller = $toResolve[0];
         $method = $toResolve[1] ?? '__invoke';
-        $quillRequest = new Request($request);
+        $quillRequest = $this->container->get(RequestInterface::class);
         $response = $this->container->get(ResponseInterface::class);
 
         return fn() => new $controller($this->container, $quillRequest, $response)->{$method}(...array_values($route->getParams()));
@@ -66,7 +65,7 @@ final class RequestHandler implements RequestHandlerInterface
         $target = $route->getTarget();
         $controller = $target[0];
         $method = $target[1] ?? '__invoke';
-        $quillRequest = new Request($request);
+        $quillRequest = $this->container->get(RequestInterface::class);
         $response = $this->container->get(ResponseInterface::class);
 
         return fn() => new $controller($this->container, $quillRequest, $response)->{$method}(...array_values($route->getParams()));
@@ -76,7 +75,7 @@ final class RequestHandler implements RequestHandlerInterface
     {
         /** @var RouteInterface $route */
         $route = $request->getAttribute(RequestAttribute::ROUTE->value);
-        $quillRequest = new Request($request);
+        $quillRequest = $this->container->get(RequestInterface::class);
         $response = $this->container->get(ResponseInterface::class);
 
         return fn() => ($route->getTarget())($quillRequest, $response, $route->getParams());

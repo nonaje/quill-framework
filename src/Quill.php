@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Quill;
 
 use Closure;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -14,6 +15,7 @@ use Quill\Contracts\Configuration\ConfigurationInterface;
 use Quill\Contracts\Container\ContainerInterface;
 use Quill\Contracts\ErrorHandler\ErrorHandlerInterface;
 use Quill\Contracts\Middleware\MiddlewarePipelineInterface;
+use Quill\Contracts\Request\RequestFactoryInterface;
 use Quill\Contracts\Request\RequestInterface;
 use Quill\Contracts\Response\ResponseInterface;
 use Quill\Contracts\Response\ResponseSenderInterface;
@@ -24,8 +26,6 @@ use Quill\Middleware\ExceptionHandlingMiddleware;
 use Quill\Middleware\ExecuteGlobalUserDefinedMiddlewares;
 use Quill\Middleware\ExecuteRouteMiddlewares;
 use Quill\Middleware\RouteFinderMiddleware;
-use Quill\Request\Request;
-use Quill\Response\Response;
 use Quill\Router\Router;
 
 final class Quill implements ApplicationInterface
@@ -161,13 +161,21 @@ final class Quill implements ApplicationInterface
 
     private function preparePerRequestBindings(ServerRequestInterface $request): void
     {
+        /** @var RequestFactoryInterface $requestFactory */
+        $requestFactory = $this->container->get(RequestFactoryInterface::class);
+        $requestResolver = static function () use ($requestFactory, $request): RequestInterface {
+            return $requestFactory->make($request);
+        };
+
         if ($this->container->has(RequestInterface::class)) {
-            $this->container->refresh(RequestInterface::class, static fn (): RequestInterface => new Request($request));
+            $this->container->refresh(RequestInterface::class, $requestResolver);
         } else {
-            $this->container->singleton(RequestInterface::class, static fn (): RequestInterface => new Request($request));
+            $this->container->singleton(RequestInterface::class, $requestResolver);
         }
 
-        $this->container->refresh(ResponseInterface::class, static fn (): ResponseInterface => new Response());
+        /** @var ResponseFactoryInterface $responseFactory */
+        $responseFactory = $this->container->get(ResponseFactoryInterface::class);
+        $this->container->refresh(ResponseInterface::class, static fn () => $responseFactory->createResponse());
     }
 
     /**

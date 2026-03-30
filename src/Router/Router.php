@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Quill\Router;
 
 use Closure;
-use Nyholm\Psr7\Uri;
 use Psr\Http\Server\MiddlewareInterface;
 use Quill\Contracts\Middleware\MiddlewareFactoryInterface;
 use Quill\Contracts\Router\RouteInterface;

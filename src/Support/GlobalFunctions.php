@@ -17,15 +17,15 @@ if (!function_exists('refresh')) {
 }
 
 if (!function_exists('app')) {
-    function app(string $appRoot = ''): \Quill\Contracts\ApplicationInterface
+    function app(string $appRoot = '', array $options = []): \Quill\Contracts\ApplicationInterface
     {
         if ($appRoot !== '') {
             \Quill\Factory\QuillFactory::useDefaultRoot($appRoot);
 
-            return \Quill\Factory\QuillFactory::shared($appRoot);
+            return \Quill\Factory\QuillFactory::shared($appRoot, $options);
         }
 
-        return \Quill\Factory\QuillFactory::shared();
+        return \Quill\Factory\QuillFactory::shared(null, $options);
     }
 }
 
@@ -55,20 +55,6 @@ if (!function_exists('config')) {
     {
         $config = resolve(\Quill\Contracts\Configuration\ConfigurationInterface::class);
         return $key ? $config->get($key, $default) : $config;
-    }
-}
-
-if (! function_exists('routes')) {
-    function routes(string $path): mixed
-    {
-        return \Quill\Factory\QuillFactory::container()->get(\Quill\Contracts\Support\PathResolverInterface::class)->toFile("routes/$path");
-    }
-}
-
-if (! function_exists('file_path')) {
-    function file_path(string $path): mixed
-    {
-        return \Quill\Factory\QuillFactory::container()->get(\Quill\Contracts\Support\PathResolverInterface::class)->toFile("$path");
     }
 }
 
